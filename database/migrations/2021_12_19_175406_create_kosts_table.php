@@ -17,7 +17,8 @@ class CreateKostsTable extends Migration
         Schema::create('kosts', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class);
-            $table->foreign('user_username')->references('username')->on('users');
+            $table->foreign('user_username')->references('username')->on('users')->cascadeOnDelete();
+            $table->string('name');
             $table->string('address', 100);
             $table->timestamps();
         });

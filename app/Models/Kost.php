@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Kost extends Model
 {
-    use HasFactory;
+    protected $fillable = ['name', 'address'];
 
     public function user()
     {
@@ -17,6 +16,11 @@ class Kost extends Model
     public function rooms()
     {
         return $this->hasManyThrough(Room::class, RoomType::class);
+    }
+
+    public function services()
+    {
+        return $this->hasMany(Service::class);
     }
 
     public function tenants()

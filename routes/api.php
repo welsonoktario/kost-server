@@ -1,6 +1,9 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\KostController;
+use App\Http\Controllers\RoomController;
+use App\Http\Controllers\TenantController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +17,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::prefix('auth')->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::resource('kosts', KostController::class)
+        ->except('index');
+    Route::resource('rooms', RoomController::class);
+    Route::resource('tenants', TenantController::class);
 });

@@ -3,48 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kost;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Throwable;
 
 class KostController extends Controller
 {
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $kost_req = $request->kost;
-        $types_req = $request->types;
-
-        try {
-            $kost = Kost::create($kost_req);
-            $types = $kost->roomTypes()->create($types_req);
-
-            foreach($types as $type) {
-                $count = $type->count;
-                $rooms = array_fill(0, $count, []);
-
-                $type->rooms()->create($rooms);
-            }
-
-            return $this->success('Kost berhasil dibuat', $kost);
-        } catch (Throwable $e) {
-            return $this->fail($e->getMessage());
-        }
-    }
-
-    /**
      * Display the specified resource.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($username)
     {
-        $kost = Kost::with(['rooms.tenant', 'images'])->find($id);
+        $kost = Kost::with(['roomTypes.rooms.tenant'])->firstWhere('user_username', $username);
 
         if (!$kost) {
             return $this->fail('Data kost tidak ditemukan');

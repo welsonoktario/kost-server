@@ -17,6 +17,7 @@ class CreateRoomTypesTable extends Migration
             $table->id();
             $table->string('name');
             $table->integer('room_count');
+            $table->integer('cost');
             $table->foreignId('kost_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });

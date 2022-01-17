@@ -16,7 +16,9 @@ class RoomController extends Controller
      */
     public function index(Request $request)
     {
-        $rooms = Room::where('kost_id', $request->id);
+        $rooms = Room::whereHas('roomType.kost', fn ($q) => $q->where('id', $request->kost))
+            ->where('room_type_id', $request->type)
+            ->get();
 
         return $this->success(null, $rooms);
     }

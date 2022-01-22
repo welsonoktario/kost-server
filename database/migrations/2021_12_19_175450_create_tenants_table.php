@@ -22,7 +22,7 @@ class CreateTenantsTable extends Migration
             $table->dateTime('leave_date')->nullable();
             $table->dateTime('due_date')->nullable();
             $table->boolean('status');
-            $table->string('ktp', 16)->unique();
+            $table->string('ktp')->nullable();
             $table->timestamps();
         });
     }

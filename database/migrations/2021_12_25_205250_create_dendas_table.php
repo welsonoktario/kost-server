@@ -15,7 +15,10 @@ class CreateDendasTable extends Migration
     {
         Schema::create('dendas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('tenant_id')
+                ->constrained()
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
             $table->string('title');
             $table->text('description');
             $table->integer('cost');

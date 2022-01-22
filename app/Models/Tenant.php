@@ -9,6 +9,14 @@ class Tenant extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'entry_date',
+        'leave_date',
+        'due_date',
+        'status',
+        'ktp'
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

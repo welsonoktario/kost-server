@@ -17,7 +17,7 @@ class KostController extends Controller
      */
     public function show($username)
     {
-        $kost = Kost::with(['roomTypes.rooms.tenant'])->firstWhere('user_username', $username);
+        $kost = Kost::with(['roomTypes.rooms.tenant.user'])->firstWhere('user_username', $username);
 
         if (!$kost) {
             return $this->fail('Data kost tidak ditemukan');

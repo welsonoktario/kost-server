@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -34,33 +35,35 @@ class TenantController extends Controller
     public function store(Request $request)
     {
         $room_req = $request->room;
-        $ktp_req = $request->ktp;
         $user_req = $request->user;
+        $services_req = $request->services;
         $user_req['password'] = Hash::make($user_req['password']);
-        $entry_date = Carbon::now("Asia/Jakarta");
-        $due_date = $entry_date->addMonth();
+        $entry_date = Carbon::parse($request->entry_date, 'Asia/Jakarta') ?: Carbon::now("Asia/Jakarta");
+        $due_date = Carbon::parse($request->entry_date, 'Asia/Jakarta') ?: Carbon::now("Asia/Jakarta");
 
         try {
+            // bikin user dan tenant
             $user = User::create($user_req);
             $tenant = $user->tenant()->create(
                 [
                     'entry_date' => $entry_date,
-                    'due_date' => $due_date,
-                    'status' => 'Aktif'
+                    'due_date' => $due_date->addMonth(),
+                    'status' => true
                 ]
             );
 
-            $ktp = base64_decode($ktp_req);
-            $filename = "tenant_{$tenant->id}.jpeg";
-            Storage::disk('public')->put($filename, $ktp);
+            // tambah services user
+            $tenant->services()->sync($services_req);
 
-            $tenant->update(['ktp' => $filename]);
+            // room diisi tenant
+            Room::find($room_req)->update(['tenant_id' => $tenant->id]);
+            $room_updated = Room::with('tenant.user')->find($room_req);
 
-            Room::where($room_req)->update(['tenant_id' => $tenant->id]);
-            $room_updated = Room::with(['tenant'])->find($room_req);
-
-            return $this->success('Data KTP berhasil ter-upload', $room_updated);
+            return $this->success('Data tenant berhasil ditambahkan', $room_updated);
         } catch (Throwable $err) {
+            Log::debug($err->getMessage());
+            error_log($err->getMessage());
+
             return $this->fail($err->getMessage());
         }
     }
@@ -119,5 +122,20 @@ class TenantController extends Controller
         }
 
         return $this->success('Data tenant berhasil dihapus');
+    }
+
+    public function uploadKtp(Request $request)
+    {
+        try {
+            // upload ktp tenant
+            $ktp = base64_decode($request->ktp);
+            $filename = "tenant_{$request->tenant}.jpeg";
+            Storage::disk('public')->put($filename, $ktp);
+            Tenant::find($request->tenant)->update(['ktp' => $filename]);
+
+            return $this->success('Data tenant berhasil ditambahkan');
+        } catch (Throwable $e) {
+            return $this->fail($e->getMessage());
+        }
     }
 }

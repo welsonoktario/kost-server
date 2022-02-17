@@ -17,6 +17,10 @@ class Tenant extends Model
         'ktp'
     ];
 
+    protected $casts = [
+        'status' => 'boolean'
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -29,7 +33,7 @@ class Tenant extends Model
 
     public function services()
     {
-        return $this->hasMany(Service::class);
+        return $this->belongsToMany(Service::class);
     }
 
     public function invoices()

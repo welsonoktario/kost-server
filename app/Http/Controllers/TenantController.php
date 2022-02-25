@@ -52,6 +52,12 @@ class TenantController extends Controller
                 ]
             );
 
+            // upload ktp tenant
+            $ktp = base64_decode($request->ktp);
+            $filename = "tenant_{$tenant->id}.jpeg";
+            Storage::disk('public')->put($filename, $ktp);
+            Tenant::find($tenant->id)->update(['ktp' => $filename]);
+
             // tambah services user
             $tenant->services()->sync($services_req);
 
@@ -122,20 +128,5 @@ class TenantController extends Controller
         }
 
         return $this->success('Data tenant berhasil dihapus');
-    }
-
-    public function uploadKtp(Request $request)
-    {
-        try {
-            // upload ktp tenant
-            $ktp = base64_decode($request->ktp);
-            $filename = "tenant_{$request->tenant}.jpeg";
-            Storage::disk('public')->put($filename, $ktp);
-            Tenant::find($request->tenant)->update(['ktp' => $filename]);
-
-            return $this->success('Data tenant berhasil ditambahkan');
-        } catch (Throwable $e) {
-            return $this->fail($e->getMessage());
-        }
     }
 }

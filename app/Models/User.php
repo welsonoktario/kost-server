@@ -35,11 +35,13 @@ class User extends Authenticatable
      */
     protected $hidden = ['password'];
 
-    public function kost() {
-        return $this->hasOne(Kost::class);
+    public function kost()
+    {
+        return $this->hasMany(Kost::class);
     }
 
-    public function tenant() {
+    public function tenant()
+    {
         return $this->hasOne(Tenant::class);
     }
 }

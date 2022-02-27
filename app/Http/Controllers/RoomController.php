@@ -16,7 +16,8 @@ class RoomController extends Controller
      */
     public function index(Request $request)
     {
-        $rooms = Room::whereHas('roomType.kost', fn ($q) => $q->where('id', $request->kost))
+        $rooms = Room::with('tenant.user')
+            ->whereHas('roomType.kost', fn ($q) => $q->where('id', $request->kost))
             ->where('room_type_id', $request->type)
             ->get();
 
@@ -42,7 +43,7 @@ class RoomController extends Controller
      */
     public function show($id)
     {
-        $room = Room::with('tenant')->find($id);
+        $room = Room::with(['roomType', 'tenant.user', 'tenant.services'])->find($id);
 
         if (!$room) {
             return $this->fail('Data room tidak ditemukan');

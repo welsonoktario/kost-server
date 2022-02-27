@@ -9,6 +9,18 @@ class Tenant extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'entry_date',
+        'leave_date',
+        'due_date',
+        'status',
+        'ktp'
+    ];
+
+    protected $casts = [
+        'status' => 'boolean'
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -21,7 +33,7 @@ class Tenant extends Model
 
     public function services()
     {
-        return $this->hasMany(Service::class);
+        return $this->belongsToMany(Service::class);
     }
 
     public function invoices()

@@ -10,6 +10,8 @@ class Room extends Model
 {
     use HasFactory, BelongsToThrough;
 
+    protected $fillable = ['tenant_id'];
+
     public function kost()
     {
         return $this->belongsToThrough(Kost::class, RoomType::class);

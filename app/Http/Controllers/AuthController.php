@@ -33,8 +33,8 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $kost_req = json_decode($request->kost, true);
-        $types_req = json_decode($request->types, true);
-        $services_req = json_decode($request->services, true);
+        $types_req = array_reverse(json_decode($request->types, true));
+        $services_req = array_reverse(json_decode($request->services, true));
         $user_req = $kost_req['user'];
         $user_req['password'] = Hash::make($request->password);
 
@@ -64,6 +64,7 @@ class AuthController extends Controller
                 'token' => $token->plainTextToken
             ]);
         } catch (Throwable $e) {
+            report($e);
             return $this->fail($e->getMessage());
         }
     }

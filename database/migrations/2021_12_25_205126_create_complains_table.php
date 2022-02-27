@@ -15,7 +15,9 @@ class CreateComplainsTable extends Migration
     {
         Schema::create('complains', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('tenant_id')
+                ->constrained()
+                ->cascadeOnDelete();
             $table->text('description');
             $table->timestamps();
         });

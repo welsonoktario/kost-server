@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Room;
 use App\Models\Tenant;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class TenantController extends Controller
@@ -29,13 +34,43 @@ class TenantController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $user = User::create($request->user);
-            $tenant = $user->tenant()->create($request->tenant);
+        $room_req = $request->room;
+        $user_req = $request->user;
+        $services_req = $request->services;
+        $user_req['password'] = Hash::make($user_req['password']);
+        $entry_date = Carbon::parse($request->entry_date, 'Asia/Jakarta') ?: Carbon::now("Asia/Jakarta");
+        $due_date = Carbon::parse($request->entry_date, 'Asia/Jakarta') ?: Carbon::now("Asia/Jakarta");
 
-            return $this->success('Tenant berhasil ditambahkan', $tenant);
-        } catch (Throwable $e) {
-            return $this->fail($e->getMessage());
+        try {
+            // bikin user dan tenant
+            $user = User::create($user_req);
+            $tenant = $user->tenant()->create(
+                [
+                    'entry_date' => $entry_date,
+                    'due_date' => $due_date->addMonth(),
+                    'status' => true
+                ]
+            );
+
+            // upload ktp tenant
+            $ktp = base64_decode($request->ktp);
+            $filename = "tenant_{$tenant->id}.jpeg";
+            Storage::disk('public')->put($filename, $ktp);
+            Tenant::find($tenant->id)->update(['ktp' => $filename]);
+
+            // tambah services user
+            $tenant->services()->sync($services_req);
+
+            // room diisi tenant
+            Room::find($room_req)->update(['tenant_id' => $tenant->id]);
+            $room_updated = Room::with('tenant.user')->find($room_req);
+
+            return $this->success('Data tenant berhasil ditambahkan', $room_updated);
+        } catch (Throwable $err) {
+            Log::debug($err->getMessage());
+            error_log($err->getMessage());
+
+            return $this->fail($err->getMessage());
         }
     }
 

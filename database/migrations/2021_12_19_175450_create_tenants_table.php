@@ -18,11 +18,11 @@ class CreateTenantsTable extends Migration
             $table->id();
             $table->foreignIdFor(User::class);
             $table->foreign('user_username')->references('username')->on('users');
-            $table->dateTime('entry_date')->useCurrent();
-            $table->dateTime('leave_date')->nullable();
-            $table->dateTime('due_date')->nullable();
+            $table->date('entry_date')->useCurrent();
+            $table->date('leave_date')->nullable();
+            $table->date('due_date')->nullable();
             $table->boolean('status');
-            $table->string('ktp', 16)->unique();
+            $table->string('ktp')->nullable();
             $table->timestamps();
         });
     }

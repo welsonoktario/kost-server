@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KostController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TenantController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,4 +28,5 @@ Route::middleware('auth:sanctum')->group(function () {
         ->except('index');
     Route::resource('rooms', RoomController::class);
     Route::resource('tenants', TenantController::class);
+    Route::resource('services', ServiceController::class);
 });

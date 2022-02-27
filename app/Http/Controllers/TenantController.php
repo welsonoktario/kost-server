@@ -8,7 +8,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -47,7 +46,7 @@ class TenantController extends Controller
             $tenant = $user->tenant()->create(
                 [
                     'entry_date' => $entry_date,
-                    'due_date' => $due_date->addMonth(),
+                    'due_date' => $due_date->addMonths(2),
                     'status' => true
                 ]
             );
@@ -67,9 +66,6 @@ class TenantController extends Controller
 
             return $this->success('Data tenant berhasil ditambahkan', $room_updated);
         } catch (Throwable $err) {
-            Log::debug($err->getMessage());
-            error_log($err->getMessage());
-
             return $this->fail($err->getMessage());
         }
     }

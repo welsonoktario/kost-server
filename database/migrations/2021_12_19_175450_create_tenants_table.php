@@ -17,7 +17,11 @@ class CreateTenantsTable extends Migration
         Schema::create('tenants', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class);
-            $table->foreign('user_username')->references('username')->on('users');
+            $table->foreign('user_username')
+                ->references('username')
+                ->on('users')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->date('entry_date')->useCurrent();
             $table->date('leave_date')->nullable();
             $table->date('due_date')->nullable();

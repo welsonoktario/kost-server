@@ -9,6 +9,8 @@ class Invoice extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['total', 'type'];
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);

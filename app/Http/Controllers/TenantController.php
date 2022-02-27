@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\Room;
 use App\Models\Tenant;
 use App\Models\User;
@@ -43,13 +44,11 @@ class TenantController extends Controller
         try {
             // bikin user dan tenant
             $user = User::create($user_req);
-            $tenant = $user->tenant()->create(
-                [
-                    'entry_date' => $entry_date,
-                    'due_date' => $due_date->addMonths(2),
-                    'status' => true
-                ]
-            );
+            $tenant = $user->tenant()->create([
+                'entry_date' => $entry_date,
+                'due_date' => $due_date->addMonths(2),
+                'status' => true
+            ]);
 
             // upload ktp tenant
             $ktp = base64_decode($request->ktp);
@@ -62,7 +61,10 @@ class TenantController extends Controller
 
             // room diisi tenant
             Room::find($room_req)->update(['tenant_id' => $tenant->id]);
-            $room_updated = Room::with('tenant.user')->find($room_req);
+            $room_updated = Room::with('tenant.user', 'tenant.services')->find($room_req);
+
+            // bikin invoice pertama
+            $this->createInvoice($tenant, $request->durasi);
 
             return $this->success('Data tenant berhasil ditambahkan', $room_updated);
         } catch (Throwable $err) {
@@ -117,12 +119,104 @@ class TenantController extends Controller
      */
     public function destroy($id)
     {
-        $tenant = Tenant::destroy($id);
+        $tenant = Tenant::find($id)->user()->destroy();
 
         if (!$tenant) {
             return $this->fail('Terjadi kesalahan menghapus data tenant');
         }
 
         return $this->success('Data tenant berhasil dihapus');
+    }
+
+    public function addTagihan(Request $request, $id)
+    {
+        try {
+            $invoice = Invoice::where([
+                ['tenant_id', $id],
+                ['type', 'Tagihan'],
+                ['status', 'Aktif']
+            ])
+                ->latest()
+                ->first();
+
+            if (!$invoice) {
+                return $this->fail('Data tagihan tidak ditemukan');
+            }
+
+            $invoice->details()->create([
+                'description' => $request->description,
+                'cost' => $request->nominal
+            ]);
+
+            return $this->success('Tagihan berhasil ditambahkan');
+        } catch (Throwable $e) {
+            return $this->fail('Terjadi kesalahan menambah tagihan');
+        }
+    }
+
+    public function konfirmasiPembayaran($id)
+    {
+        try {
+            $invoice = Invoice::where([
+                ['tenant_id', $id],
+                ['type', 'Tagihan'],
+                ['status', 'Aktif']
+            ])
+                ->latest()
+                ->first();
+
+            if (!$invoice) {
+                return $this->fail('Data tagihan tidak ditemukan');
+            }
+
+            $invoice->update(['status' => 'Selesai']);
+
+            return $this->success('Konfirmasi pembayaran sukses');
+        } catch (Throwable $e) {
+            return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
+        }
+    }
+
+    public function perpanjang($id)
+    {
+        try {
+            $tenant = Tenant::find($id);
+            $tenant->update([
+                'due_date' => Carbon::parse($tenant->due_date)->addMonth()->format('Y-m-d')
+            ]);
+
+            $this->createInvoice($tenant, 1);
+
+            return $this->success('Konfirmasi pembayaran sukses');
+        } catch (Throwable $e) {
+            return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
+        }
+    }
+
+    private function createInvoice(Tenant $tenant, int $durasi = 1)
+    {
+        $services = $tenant->services->map(
+            fn ($service) => [
+                'description' => "Tagihan service {$service->name} untuk {$durasi} bulan",
+                'cost' => $service->cost * $durasi
+            ]
+        );
+
+        // bikin invoice yang udah lunas
+        $invoice = $tenant->invoices()->create([
+            'total' => 0,
+            'type' => 'Tagihan'
+        ]);
+
+        // bikin detail tagihan kamar
+        $details = $invoice->details()->createMany([
+            [
+                'description' => "Tagihan kamar {$tenant->room->id} selama {$durasi} bulan",
+                'cost' => $tenant->room->roomType->cost * $durasi
+            ],
+            ...$services
+        ]);
+
+        $invoice->update(['total' => $details->sum('cost')]);
     }
 }

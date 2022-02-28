@@ -37,7 +37,7 @@ class TenantController extends Controller
         $room_req = $request->room;
         $user_req = $request->user;
         $services_req = $request->services;
-        $user_req['password'] = Hash::make($user_req['password']);
+        $user_req['password'] = Hash::make($user_req['username'].substr($user_req['phone'], -4));
         $entry_date = Carbon::parse($request->entry_date, 'Asia/Jakarta') ?: Carbon::now("Asia/Jakarta");
         $due_date = Carbon::parse($request->entry_date, 'Asia/Jakarta') ?: Carbon::now("Asia/Jakarta");
 
@@ -145,7 +145,7 @@ class TenantController extends Controller
 
             $invoice->details()->create([
                 'description' => $request->description,
-                'cost' => $request->nominal
+                'cost' => $request->cost
             ]);
 
             return $this->success('Tagihan berhasil ditambahkan');
@@ -169,7 +169,9 @@ class TenantController extends Controller
                 return $this->fail('Data tagihan tidak ditemukan');
             }
 
-            $invoice->update(['status' => 'Selesai']);
+            if (!$invoice->update(['status' => 'Selesai'])) {
+                return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
+            }
 
             return $this->success('Konfirmasi pembayaran sukses');
         } catch (Throwable $e) {
@@ -187,9 +189,9 @@ class TenantController extends Controller
 
             $this->createInvoice($tenant, 1);
 
-            return $this->success('Konfirmasi pembayaran sukses');
+            return $this->success('Perpanjangan berhasil');
         } catch (Throwable $e) {
-            return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
+            return $this->fail('Terjadi kesalahan perpanjangan');
         }
     }
 

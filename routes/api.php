@@ -27,7 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('tenants')->group(function() {
         Route::post('{tenant}/tagihan', [TenantController::class, 'addTagihan'])->name('tenants.addTagihan');
         Route::get('{tenant}/konfirmasi', [TenantController::class, 'konfirmasiPembayaran'])->name('tenants.konfirmasiPembayaran');
-        Route::get('{tenant}/perpanjangan', [TenantController::class, 'perpanjangan'])->name('tenants.perpanjangan');
+        Route::get('{tenant}/perpanjang', [TenantController::class, 'perpanjang'])->name('tenants.perpanjang');
     });
 
     Route::resource('kosts', KostController::class)

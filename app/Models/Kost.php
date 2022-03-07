@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Kost extends Model
 {
-    protected $fillable = ['name', 'address'];
+    protected $guarded = ['id', 'user_username'];
 
     public function user()
     {

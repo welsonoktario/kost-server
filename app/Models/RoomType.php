@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RoomType extends Model
 {
-    protected $fillable = ['name', 'cost', 'room_count', 'created_at', 'updated_at'];
+    protected $guarded = ['id', 'kost_id'];
 
     public function kost()
     {

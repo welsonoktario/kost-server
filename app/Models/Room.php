@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use \Znck\Eloquent\Traits\BelongsToThrough;
 
 class Room extends Model
 {
-    use HasFactory, BelongsToThrough;
+    use BelongsToThrough;
 
-    protected $fillable = ['tenant_id'];
+    protected $guarded = ['id', 'room_type_id'];
 
     public function kost()
     {

@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Room;
-use App\Models\RoomType;
-use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class AuthController extends Controller
@@ -32,9 +30,11 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $kost_req = json_decode($request->kost, true);
-        $types_req = array_reverse(json_decode($request->types, true));
-        $services_req = array_reverse(json_decode($request->services, true));
+        Log::debug(json_encode($request->all()));
+
+        $kost_req = $request->kost;
+        $types_req = array_reverse($request->types);
+        $services_req = array_reverse($request->services);
         $user_req = $kost_req['user'];
         $user_req['password'] = Hash::make($request->password);
 
@@ -44,13 +44,7 @@ class AuthController extends Controller
 
             foreach ($types_req as $type_req) {
                 $type = $kost->roomTypes()->create($type_req);
-                $rooms = array_fill(0, $type->room_count, [
-                    'room_type_id' => $type->id,
-                    'created_at' => now('Asia/Jakarta'),
-                    'updated_at' => now('Asia/Jakarta'),
-                ]);
-
-                Room::insert($rooms);
+                $type->rooms()->createMany([range(0, $type->room_count)]);
             }
 
             foreach ($services_req as $service_req) {

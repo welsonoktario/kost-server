@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Complain extends Model
 {
-    use HasFactory;
+    protected $guarded = ['id', 'tenant_id'];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 }

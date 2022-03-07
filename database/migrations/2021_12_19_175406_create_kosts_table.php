@@ -24,6 +24,8 @@ class CreateKostsTable extends Migration
                 ->cascadeOnUpdate();
             $table->string('name');
             $table->string('address', 100);
+            $table->int('nominal_denda')->default(0);
+            $table->int('interval_denda')->default(1);
             $table->timestamps();
         });
     }

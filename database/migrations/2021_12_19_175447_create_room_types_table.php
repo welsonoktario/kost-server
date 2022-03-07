@@ -15,13 +15,13 @@ class CreateRoomTypesTable extends Migration
     {
         Schema::create('room_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->integer('room_count');
-            $table->integer('cost');
             $table->foreignId('kost_id')
                 ->constrained()
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
+            $table->string('name');
+            $table->integer('room_count');
+            $table->integer('cost');
             $table->timestamps();
         });
     }

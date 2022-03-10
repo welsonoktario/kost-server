@@ -37,4 +37,9 @@ class Kost extends Model
     {
         return $this->hasMany(KostImage::class);
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
 }

@@ -80,7 +80,7 @@ class TenantController extends Controller
      */
     public function show($id)
     {
-        $tenant = Tenant::with(['user', 'room'])->find($id);
+        $tenant = Tenant::with(['services', 'room.roomType'])->find($id);
 
         if (!$tenant) {
             return $this->fail('Data tenant tidak ditemukan');

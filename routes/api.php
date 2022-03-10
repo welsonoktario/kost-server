@@ -30,9 +30,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{tenant}/perpanjang', [TenantController::class, 'perpanjang'])->name('tenants.perpanjang');
     });
 
-    Route::resource('kosts', KostController::class)
-        ->except('index');
-    Route::resource('rooms', RoomController::class);
-    Route::resource('tenants', TenantController::class);
-    Route::resource('services', ServiceController::class);
+    Route::resources([
+        'kosts' => KostController::class,
+        'rooms' => RoomController::class,
+        'tenants' => TenantController::class,
+        'services' => ServiceController::class
+    ], [
+        'except' => ['create', 'edit']
+    ]);
 });

@@ -43,11 +43,10 @@ class AuthController extends Controller
             $kost = $user->kost()->create($kost_req);
 
             foreach ($types_req as $type_req) {
-                $rooms = [];
                 $type = $kost->roomTypes()->create($type_req);
 
-                array_fill(0, $type->room_count, []);
-
+                $rooms = array_fill(0, $type->room_count, ['room_type_id' => $type->id]);
+                Log::debug(json_encode($rooms));
                 $type->rooms()->createMany($rooms);
             }
 

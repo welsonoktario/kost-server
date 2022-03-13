@@ -9,7 +9,7 @@ class Room extends Model
 {
     use BelongsToThrough;
 
-    protected $guarded = ['id', 'room_type_id'];
+    protected $guarded = ['id'];
 
     public function kost()
     {

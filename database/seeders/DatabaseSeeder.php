@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        /* $user = User::create(
+        $user = User::create(
             [
                 'username' => 'amar',
                 'name' => 'Amar',
@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
                     'cost' => 650000
                 ]
             ]
-        ); */
+        );
 
         $rooms = [];
 

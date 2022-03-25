@@ -157,6 +157,7 @@ class TenantController extends Controller
     public function konfirmasiPembayaran($id)
     {
         try {
+            $services = Tenant::find($id)->service;
             $invoice = Invoice::where([
                 ['tenant_id', $id],
                 ['type', 'Tagihan'],
@@ -167,10 +168,6 @@ class TenantController extends Controller
 
             if (!$invoice) {
                 return $this->fail('Data tagihan tidak ditemukan');
-            }
-
-            if (!$invoice->update(['status' => 'Selesai'])) {
-                return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
             }
 
             return $this->success('Konfirmasi pembayaran sukses');

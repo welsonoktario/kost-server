@@ -32,7 +32,7 @@ class Tenant extends Model
 
     public function services()
     {
-        return $this->belongsToMany(Service::class);
+        return $this->belongsToMany(Service::class, 'service_tenant')->withPivot('status');
     }
 
     public function invoices()

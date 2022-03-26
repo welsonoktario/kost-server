@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Invoice;
 use App\Models\Room;
 use App\Models\Tenant;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -36,17 +36,19 @@ class TenantController extends Controller
     {
         $room_req = $request->room;
         $user_req = $request->user;
-        $services_req = $request->services;
-        $user_req['password'] = Hash::make($user_req['username'].substr($user_req['phone'], -4));
-        $entry_date = Carbon::parse($request->entry_date, 'Asia/Jakarta') ?: Carbon::now("Asia/Jakarta");
-        $due_date = Carbon::parse($request->entry_date, 'Asia/Jakarta') ?: Carbon::now("Asia/Jakarta");
+        $services_req = collect($request->services)->map(fn ($s) => ['service_id', $s]);
+        $user_req['password'] = Hash::make($user_req['username'] . substr($user_req['phone'], -4));
+        $entry_date = Carbon::parse($request->entry_date, 'Asia/Jakarta');
+        $due_date = Carbon::parse($request->entry_date, 'Asia/Jakarta')->addMonth();
+        $leave_date = Carbon::parse($request->entry_date, 'Asia/Jakarta')->addMonths($request->durasi);
 
         try {
             // bikin user dan tenant
             $user = User::create($user_req);
             $tenant = $user->tenant()->create([
                 'entry_date' => $entry_date,
-                'due_date' => $due_date->addMonths(2),
+                'due_date' => $due_date,
+                'leave_date' => $leave_date,
                 'status' => true
             ]);
 
@@ -57,14 +59,22 @@ class TenantController extends Controller
             Tenant::find($tenant->id)->update(['ktp' => $filename]);
 
             // tambah services user
-            $tenant->services()->sync($services_req);
+            $tenant->services()->createMany($services_req);
 
             // room diisi tenant
             Room::find($room_req)->update(['tenant_id' => $tenant->id]);
             $room_updated = Room::with('tenant.user', 'tenant.services')->find($room_req);
 
-            // bikin invoice pertama
-            $this->createInvoice($tenant, $request->durasi);
+            // bikin invoice tagihan
+            $invoice = $tenant->invoices()->create([
+                'total' => $room_updated->roomType->cost,
+                'type' => 'Pemasukan'
+            ]);
+
+            $invoice->invoiceDetails()->create([
+                'description' => "Tagihan tenant untuk bulan " . Carbon::now()->format('m-Y'),
+                'cost' => $room_updated->roomType->cost
+            ]);
 
             return $this->success('Data tenant berhasil ditambahkan', $room_updated);
         } catch (Throwable $err) {
@@ -80,13 +90,24 @@ class TenantController extends Controller
      */
     public function show($id)
     {
-        $tenant = Tenant::with(['services', 'room.roomType'])->find($id);
+        $total = 0;
+        $tenant = Tenant::with([
+            'services' => fn ($q) => $q->where('status', 'diterima'),
+            'additionals' => fn ($q) => $q->where('status', 'pending'),
+            'dendas' => fn ($q) => $q->where('status', 'pending'),
+            'room.roomType'
+        ])->find($id);
+
+        $total += $tenant->services->sum('service.cost') + $tenant->additionals->sum('cost') + $tenant->dendas->sum('cost');
 
         if (!$tenant) {
             return $this->fail('Data tenant tidak ditemukan');
         }
 
-        return $this->success(null, $tenant);
+        return $this->success(null, [
+            'tenant' => $tenant,
+            'total' => $total
+        ]);
     }
 
     /**
@@ -131,91 +152,106 @@ class TenantController extends Controller
     public function addTagihan(Request $request, $id)
     {
         try {
-            $invoice = Invoice::where([
-                ['tenant_id', $id],
-                ['type', 'Tagihan'],
-                ['status', 'Aktif']
-            ])
-                ->latest()
-                ->first();
-
-            if (!$invoice) {
-                return $this->fail('Data tagihan tidak ditemukan');
-            }
-
-            $invoice->details()->create([
+            $tenant = Tenant::find($id);
+            $additional = $tenant->additionals()->create([
+                'cost' => $request->cost,
                 'description' => $request->description,
-                'cost' => $request->cost
             ]);
 
-            return $this->success('Tagihan berhasil ditambahkan');
+            return $this->success('Tagihan berhasil ditambahkan', $additional);
         } catch (Throwable $e) {
+            Log::error($e->getMessage());
             return $this->fail('Terjadi kesalahan menambah tagihan');
         }
     }
 
-    public function konfirmasiPembayaran($id)
+    public function konfirmasiPembayaran(Request $request, $id)
     {
         try {
-            $services = Tenant::find($id)->service;
-            $invoice = Invoice::where([
-                ['tenant_id', $id],
-                ['type', 'Tagihan'],
-                ['status', 'Aktif']
-            ])
-                ->latest()
-                ->first();
+            $tenant = Tenant::with([
+                'room.roomType',
+                'services' => fn ($q) => $q->where('status', 'diterima'),
+                'dendas' => fn ($q) => $q->where('status', 'pending'),
+                'additionals' => fn ($q) => $q->where('status', 'pending')
+            ])->find($id);
 
-            if (!$invoice) {
-                return $this->fail('Data tagihan tidak ditemukan');
+            if (!$tenant) {
+                return $this->fail('Data tenant tidak ditemukan');
+            }
+
+            $invoice = $tenant->invoices()->create([
+                'type' => 'Pemasukan',
+                'total' => $request->total,
+                'description' => "Tagihan tenant untuk bulan " . Carbon::now()->format('m-Y')
+            ]);
+
+            $tagihan = [
+                'cost' => $tenant->room->roomType->cost,
+                'description' => "Tagihan kamar jenis {$tenant->room->roomType->name}"
+            ];
+
+            $services = $tenant->services->map(function ($service, $key) {
+                $tanggal = Carbon::parse($service->created_at)->format('d-m-Y');
+
+                return [
+                    'description' => "Service {$service->nama} pada {$tanggal}",
+                    'cost' => $service->cost
+                ];
+            });
+
+            $additionals = $tenant->additionals->map(function ($additional, $key) {
+                return [
+                    'description' => $additional->description,
+                    'cost' => $additional->cost
+                ];
+            });
+
+            if ($tenant->dendas->count()) {
+                $dendas = [
+                    'description' => "Denda keterlambatan selama {$tenant->dendas->count()} hari",
+                    'cost' => $tenant->dendas->sum('cost')
+                ];
+
+                $invoice->invoiceDetails()->createMany([
+                    $tagihan,
+                    ...$services,
+                    ...$additionals,
+                    $dendas
+                ]);
+            } else {
+                $invoice->invoiceDetails()->createMany([
+                    $tagihan,
+                    ...$services,
+                    ...$additionals
+                ]);
+            }
+
+            foreach ($tenant->additionals as $additional) {
+                $additional->update(['status' => 'dibayar']);
+            }
+
+            foreach ($tenant->dendas as $denda) {
+                $denda->update(['status' => 'dibayar']);
             }
 
             return $this->success('Konfirmasi pembayaran sukses');
         } catch (Throwable $e) {
+            Log::error($e);
             return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
         }
     }
 
-    public function perpanjang($id)
+    public function perpanjang(Request $request, $id)
     {
         try {
             $tenant = Tenant::find($id);
             $tenant->update([
-                'due_date' => Carbon::parse($tenant->due_date)->addMonth()->format('Y-m-d')
+                'leave_date' => Carbon::parse($tenant->leave_date)->addMonths($request->durasi)->format('Y-m-d')
             ]);
-
-            $this->createInvoice($tenant, 1);
 
             return $this->success('Perpanjangan berhasil');
         } catch (Throwable $e) {
             return $this->fail('Terjadi kesalahan perpanjangan');
         }
-    }
-
-    private function createInvoice(Tenant $tenant, int $durasi = 1)
-    {
-        $services = $tenant->services->map(
-            fn ($service) => [
-                'description' => "Tagihan service {$service->name} untuk {$durasi} bulan",
-                'cost' => $service->cost * $durasi
-            ]
-        );
-
-        // bikin invoice yang udah lunas
-        $invoice = $tenant->invoices()->create([
-            'total' => 0,
-            'type' => 'Tagihan'
-        ]);
-
-        // bikin detail tagihan kamar
-        $details = $invoice->details()->createMany([
-            [
-                'description' => "Tagihan kamar {$tenant->room->id} selama {$durasi} bulan",
-                'cost' => $tenant->room->roomType->cost * $durasi
-            ],
-            ...$services
-        ]);
-
-        $invoice->update(['total' => $details->sum('cost')]);
     }
 }

@@ -10,11 +10,6 @@ class Service extends Model
 
     public function tenants()
     {
-        return $this->belongsToMany(Tenant::class);
-    }
-
-    public function invoices()
-    {
-        return $this->belongsToMany(Invoice::class);
+        return $this->hasMany(TenantService::class)->with('tenant');
     }
 }

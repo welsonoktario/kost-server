@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateDendasTable extends Migration
+class CreateAdditionalsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,14 @@ class CreateDendasTable extends Migration
      */
     public function up()
     {
-        Schema::create('dendas', function (Blueprint $table) {
+        Schema::create('additionals', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')
                 ->constrained()
-                ->cascadeOnDelete()
-                ->cascadeOnUpdate();
-            $table->string('title');
-            $table->text('description');
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->integer('cost');
+            $table->text('description')->nullable();
             $table->enum('status', ['pending', 'dibayar'])->default('pending');
             $table->timestamps();
         });
@@ -34,6 +33,6 @@ class CreateDendasTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('dendas');
+        Schema::dropIfExists('additionals');
     }
 }

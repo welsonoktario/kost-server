@@ -43,11 +43,22 @@ class RoomController extends Controller
      */
     public function show($id)
     {
-        $room = Room::with(['roomType', 'tenant.user', 'tenant.services'])->find($id);
+        $room = Room::with([
+            'roomType',
+            'tenant.user',
+            'tenant.services' => fn ($q) => $q->where('status', 'diterima'),
+            'tenant.additionals' => fn ($q) => $q->where('status', 'pending'),
+            'tenant.dendas' => fn ($q) => $q->where('status', 'pending'),
+        ])->find($id);
+
+        $total = $room->roomType->cost;
 
         if (!$room) {
             return $this->fail('Data room tidak ditemukan');
         }
+
+        $total += $room->tenant->services->sum('service.cost') + $room->tenant->additionals->sum('cost') + $room->tenant->dendas->sum('cost');
+        $room['total'] = $total;
 
         return $this->success(null, $room);
     }

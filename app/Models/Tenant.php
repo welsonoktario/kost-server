@@ -32,12 +32,17 @@ class Tenant extends Model
 
     public function services()
     {
-        return $this->belongsToMany(Service::class, 'service_tenant')->withPivot('status');
+        return $this->hasMany(TenantService::class)->with('service');
     }
 
     public function invoices()
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    public function additionals()
+    {
+        return $this->hasMany(Additional::class);
     }
 
     public function complains()
@@ -57,6 +62,6 @@ class Tenant extends Model
 
     public function dendas()
     {
-        return $this->hasManyThrough(Denda::class, Invoice::class);
+        return $this->hasMany(Denda::class);
     }
 }

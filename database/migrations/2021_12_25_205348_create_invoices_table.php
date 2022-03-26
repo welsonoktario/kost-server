@@ -21,7 +21,6 @@ class CreateInvoicesTable extends Migration
                 ->cascadeOnUpdate();
             $table->integer('total');
             $table->enum('type', ['Pemasukan', 'Pengeluaran']);
-            $table->enum('status', ['Aktif', 'Selesai', 'Batal'])->default('Aktif');
             $table->timestamps();
         });
     }

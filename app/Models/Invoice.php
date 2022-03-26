@@ -13,18 +13,8 @@ class Invoice extends Model
         return $this->belongsTo(Tenant::class);
     }
 
-    public function details()
+    public function invoiceDetails()
     {
         return $this->hasMany(InvoiceDetail::class);
-    }
-
-    public function services()
-    {
-        return $this->hasMany(Service::class);
-    }
-
-    public function dendas()
-    {
-        return $this->hasMany(Denda::class);
     }
 }

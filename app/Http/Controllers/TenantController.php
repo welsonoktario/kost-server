@@ -140,11 +140,13 @@ class TenantController extends Controller
      */
     public function destroy($id)
     {
-        $tenant = Tenant::find($id)->user()->destroy();
+        $tenant = Tenant::find($id)->user()->delete();
 
         if (!$tenant) {
             return $this->fail('Terjadi kesalahan menghapus data tenant');
         }
+
+        Storage::delete("tenant_$id.jpeg");
 
         return $this->success('Data tenant berhasil dihapus');
     }

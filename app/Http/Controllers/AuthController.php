@@ -60,7 +60,8 @@ class AuthController extends Controller
                 'kost' => $kost,
                 'token' => $token->plainTextToken
             ]);
-        } catch (Throwable $e) {
+        }
+        catch (Throwable $e) {
             report($e);
             return $this->fail($e->getMessage());
         }

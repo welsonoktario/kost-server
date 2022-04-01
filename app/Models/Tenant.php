@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tenant extends Model
 {
+    use \Znck\Eloquent\Traits\BelongsToThrough;
+
     protected $guarded = ['id', 'kost_id'];
 
     protected $fillable = [

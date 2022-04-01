@@ -90,13 +90,15 @@ class TenantController extends Controller
      */
     public function show($id)
     {
-        $total = 0;
         $tenant = Tenant::with([
             'services' => fn ($q) => $q->where('status', 'diterima'),
             'additionals' => fn ($q) => $q->where('status', 'pending'),
             'dendas' => fn ($q) => $q->where('status', 'pending'),
-            'room.roomType'
+            'room.roomType',
+            'room.kost'
         ])->find($id);
+
+        $total = $tenant->room->roomType->cost;
 
         $total += $tenant->services->sum('service.cost') + $tenant->additionals->sum('cost') + $tenant->dendas->sum('cost');
 
@@ -106,7 +108,7 @@ class TenantController extends Controller
 
         return $this->success(null, [
             'tenant' => $tenant,
-            'total' => $total
+            'total' =>  $total
         ]);
     }
 
@@ -238,7 +240,7 @@ class TenantController extends Controller
 
             return $this->success('Konfirmasi pembayaran sukses');
         } catch (Throwable $e) {
-            Log::error($e);
+            Log::error($e . pow(2, 2));
             return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
         }
     }

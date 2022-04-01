@@ -5,6 +5,7 @@ use App\Http\Controllers\KostController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TenantController;
+use App\Http\Controllers\TenantServiceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,7 +25,7 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::prefix('tenants')->group(function() {
+    Route::prefix('tenants')->group(function () {
         Route::post('{tenant}/tagihan', [TenantController::class, 'addTagihan'])->name('tenants.addTagihan');
         Route::get('{tenant}/konfirmasi', [TenantController::class, 'konfirmasiPembayaran'])->name('tenants.konfirmasiPembayaran');
         Route::get('{tenant}/perpanjang', [TenantController::class, 'perpanjang'])->name('tenants.perpanjang');
@@ -34,7 +35,8 @@ Route::middleware('auth:sanctum')->group(function () {
         'kosts' => KostController::class,
         'rooms' => RoomController::class,
         'tenants' => TenantController::class,
-        'services' => ServiceController::class
+        'services' => ServiceController::class,
+        'tenant-services' => TenantServiceController::class
     ], [
         'except' => ['create', 'edit']
     ]);

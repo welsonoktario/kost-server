@@ -7,6 +7,7 @@ use App\Models\TenantService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use Illuminate\Support\Carbon;
 
 class TenantServiceController extends Controller
 {
@@ -42,15 +43,23 @@ class TenantServiceController extends Controller
      */
     public function store(Request $request)
     {
+        Log::debug($request->all());
         try {
             $tenant = Tenant::find($request->tenant);
-            $services = $tenant->services()->createMany($request->services);
+            $services = collect($request->services)->map(function ($s, $key) use ($request) {
+                return [
+                    'service_id' => $s,
+                    'tanggal' => $request->tanggal ?: Carbon::now()->format('Y-m-d')
+                ];
+            });
+
+            $tenant->services()->createMany($services);
         } catch (Throwable $e) {
             Log::error($e);
             return $this->fail('Terjadi kesalahan mengajukan service');
         }
 
-        return $this->success('Berhasil mengajukan service', $services);
+        return $this->success('Berhasil mengajukan service');
     }
 
     /**

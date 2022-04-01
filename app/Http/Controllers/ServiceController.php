@@ -12,9 +12,11 @@ class ServiceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $services = Service::where('kost_id', $request->kost)->get();
+
+        return $this->success(null, $services);
     }
 
     /**

@@ -8,13 +8,8 @@ class Notification extends Model
 {
     protected $guarded = ['id'];
 
-    public function kost()
+    public function notificationable()
     {
-        return $this->belongsTo(Kost::class);
-    }
-
-    public function tenant()
-    {
-        return $this->belongsTo(Tenant::class);
+        return $this->morphTo();
     }
 }

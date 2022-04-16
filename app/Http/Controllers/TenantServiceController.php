@@ -16,9 +16,10 @@ class TenantServiceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($id)
     {
-        $tenantServices = TenantService::all();
+        $tenantServices = TenantService::with(['service', 'tenant.user'])
+            ->whereHas('service', fn ($q) => $q->where('kost_id', $id))->get();
 
         return $this->success(null, $tenantServices);
     }
@@ -45,7 +46,7 @@ class TenantServiceController extends Controller
     {
         Log::debug($request->all());
         try {
-            $tenant = Tenant::find($request->tenant);
+            $tenant = Tenant::with('user')->find($request->tenant);
             $services = collect($request->services)->map(function ($s, $key) use ($request) {
                 return [
                     'service_id' => $s,
@@ -53,7 +54,13 @@ class TenantServiceController extends Controller
                 ];
             });
 
-            $tenant->services()->createMany($services);
+            $serviceTenants = $tenant->services()->createMany($services);
+            $notifications = collect($serviceTenants)->map(function ($st, $i) use ($tenant) {
+                return [
+                    'message' => "Tenant {$tenant->user->name} mengajukan service {$st->service->name} untuk tanggal {$st->tanggal}"
+                ];
+            });
+            $tenant->room->kost->notifications->notifications()->createMany($notifications);
         } catch (Throwable $e) {
             Log::error($e);
             return $this->fail('Terjadi kesalahan mengajukan service');
@@ -82,7 +89,17 @@ class TenantServiceController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $aksi = $request->aksi ?: 'diterima';
+            $tenantService = TenantService::find($id);
+            $tenantService->update([
+                'status' => $aksi
+            ]);
+
+            return $this->success('Pengajuan service diterima');
+        } catch (Throwable $e) {
+            return $this->fail($e->getMessage());
+        }
     }
 
     /**

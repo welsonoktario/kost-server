@@ -19,7 +19,7 @@ class AuthController extends Controller
             return $this->fail('Username atau password salah');
         }
 
-        $user = User::with(['tenant'])->find($request->username);
+        $user = User::with(['tenant', 'kost'])->find($request->username);
         $token = $user->createToken($request->username);
 
         return $this->success(null, [

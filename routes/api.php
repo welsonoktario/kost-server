@@ -31,12 +31,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{tenant}/perpanjang', [TenantController::class, 'perpanjang'])->name('tenants.perpanjang');
     });
 
+    Route::prefix('tenant-service')->group(function () {
+        Route::get('{id}', [TenantServiceController::class, 'index'])->name('tenant-service.index');
+        Route::get('{id}/tenant', [TenantServiceController::class, 'indexById'])->name('tenant-service.indexById');
+        Route::post('/', [TenantServiceController::class, 'store'])->name('tenant-service.index');
+        Route::put('{id}', [TenantServiceController::class, 'update'])->name('tenant-service.update');
+    });
+
     Route::resources([
         'kosts' => KostController::class,
         'rooms' => RoomController::class,
         'tenants' => TenantController::class,
         'services' => ServiceController::class,
-        'tenant-services' => TenantServiceController::class
     ], [
         'except' => ['create', 'edit']
     ]);

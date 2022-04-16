@@ -54,7 +54,7 @@ class Tenant extends Model
 
     public function notifications()
     {
-        return $this->hasMany(Notification::class);
+        return $this->morphMany(Notification::class, 'notificationable');
     }
 
     public function messages()

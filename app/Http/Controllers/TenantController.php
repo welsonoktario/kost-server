@@ -194,12 +194,13 @@ class TenantController extends Controller
                 'description' => "Tagihan kamar jenis {$tenant->room->roomType->name}"
             ];
 
-            $services = $tenant->services->map(function ($service, $key) {
-                $tanggal = Carbon::parse($service->created_at)->format('d-m-Y');
+            $services = $tenant->services->map(function ($ts, $key) {
+                $tanggal = Carbon::parse($ts->service->created_at)->format('d-m-Y');
+                $ts->update(['status' => 'selesai']);
 
                 return [
-                    'description' => "Service {$service->nama} pada {$tanggal}",
-                    'cost' => $service->cost
+                    'description' => "Service {$ts->service->name} pada {$tanggal}",
+                    'cost' => $ts->service->cost
                 ];
             });
 
@@ -240,7 +241,6 @@ class TenantController extends Controller
 
             return $this->success('Konfirmasi pembayaran sukses');
         } catch (Throwable $e) {
-            Log::error($e . pow(2, 2));
             return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
         }
     }

@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ComplainController;
 use App\Http\Controllers\KostController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TenantController;
@@ -26,23 +28,25 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('tenants')->group(function () {
-        Route::post('{tenant}/tagihan', [TenantController::class, 'addTagihan'])->name('tenants.addTagihan');
         Route::get('{tenant}/konfirmasi', [TenantController::class, 'konfirmasiPembayaran'])->name('tenants.konfirmasiPembayaran');
         Route::get('{tenant}/perpanjang', [TenantController::class, 'perpanjang'])->name('tenants.perpanjang');
+        Route::post('{tenant}/tagihan', [TenantController::class, 'addTagihan'])->name('tenants.addTagihan');
     });
 
     Route::prefix('tenant-service')->group(function () {
-        Route::get('{id}', [TenantServiceController::class, 'index'])->name('tenant-service.index');
         Route::get('{id}/tenant', [TenantServiceController::class, 'indexById'])->name('tenant-service.indexById');
         Route::post('/', [TenantServiceController::class, 'store'])->name('tenant-service.index');
         Route::put('{id}', [TenantServiceController::class, 'update'])->name('tenant-service.update');
+        Route::get('{id}', [TenantServiceController::class, 'index'])->name('tenant-service.index');
     });
 
     Route::resources([
+        'complains' => ComplainController::class,
         'kosts' => KostController::class,
+        'notifications' => NotificationController::class,
         'rooms' => RoomController::class,
-        'tenants' => TenantController::class,
         'services' => ServiceController::class,
+        'tenants' => TenantController::class,
     ], [
         'except' => ['create', 'edit']
     ]);

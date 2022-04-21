@@ -19,6 +19,8 @@ class CreateComplainsTable extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
             $table->text('description');
+            $table->enum('status', ['pending', 'diproses', 'ditolak'])
+                ->default('pending');
             $table->timestamps();
         });
     }

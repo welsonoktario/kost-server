@@ -11,7 +11,7 @@
 |
 */
 
-use App\Http\Controllers\RoomController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ComplainController;
 
-Route::get('/test/{id}', [RoomController::class, 'show']);
+Route::get('/test', [ComplainController::class, 'index']);

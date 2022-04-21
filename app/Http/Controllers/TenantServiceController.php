@@ -60,24 +60,13 @@ class TenantServiceController extends Controller
                     'message' => "Tenant {$tenant->user->name} mengajukan service {$st->service->name} untuk tanggal {$st->tanggal}"
                 ];
             });
-            $tenant->room->kost->notifications->notifications()->createMany($notifications);
+            $tenant->room->kost->notifications()->createMany($notifications);
         } catch (Throwable $e) {
             Log::error($e);
             return $this->fail('Terjadi kesalahan mengajukan service');
         }
 
         return $this->success('Berhasil mengajukan service');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
     }
 
     /**
@@ -91,25 +80,17 @@ class TenantServiceController extends Controller
     {
         try {
             $aksi = $request->aksi ?: 'diterima';
-            $tenantService = TenantService::find($id);
+            $tenantService = TenantService::with(['tenant', 'service'])->find($id);
             $tenantService->update([
                 'status' => $aksi
             ]);
 
+            $tenantService->tenant->notifications()->create([
+                'message' => "Pengajuan service {$tenantService->service->nama} anda telah disetujui"
+            ]);
             return $this->success('Pengajuan service diterima');
         } catch (Throwable $e) {
             return $this->fail($e->getMessage());
         }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 }

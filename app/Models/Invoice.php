@@ -8,6 +8,11 @@ class Invoice extends Model
 {
     protected $guarded = ['id', 'tenant_id'];
 
+    public function kost()
+    {
+        return $this->belongsTo(Kost::class);
+    }
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);

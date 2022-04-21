@@ -184,7 +184,6 @@ class TenantController extends Controller
             }
 
             $invoice = $tenant->invoices()->create([
-                'type' => 'Pemasukan',
                 'total' => $request->total,
                 'description' => "Tagihan tenant untuk bulan " . Carbon::now()->format('m-Y')
             ]);

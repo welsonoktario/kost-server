@@ -18,7 +18,7 @@ class CreateTenantServicesTable extends Migration
             $table->foreignId('service_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('tenant_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->date('tanggal')->useCurrent();
-            $table->enum('status', ['ditolak', 'diterima', 'pending'])->default('pending');
+            $table->enum('status', ['ditolak', 'diterima', 'pending', 'selesai'])->default('pending');
             $table->timestamps();
         });
     }

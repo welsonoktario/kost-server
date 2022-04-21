@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateComplainsTable extends Migration
+class CreatePengeluaransTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,15 @@ class CreateComplainsTable extends Migration
      */
     public function up()
     {
-        Schema::create('complains', function (Blueprint $table) {
+        Schema::create('pengeluarans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')
+            $table->foreignId('kost_id')
                 ->constrained()
+                ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-            $table->text('description');
-            $table->enum('status', ['pending', 'diproses', 'ditolak', 'selesai'])
-                ->default('pending');
+            $table->date('date')->useCurrent();
+            $table->integer('nominal');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }
@@ -32,6 +33,6 @@ class CreateComplainsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('complains');
+        Schema::dropIfExists('pengeluarans');
     }
 }

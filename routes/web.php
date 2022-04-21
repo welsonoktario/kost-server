@@ -12,6 +12,6 @@
 */
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ComplainController;
+use App\Http\Controllers\PembukuanController;
 
-Route::get('/test', [ComplainController::class, 'index']);
+Route::get('/test', [PembukuanController::class, 'index']);

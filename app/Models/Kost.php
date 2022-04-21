@@ -33,6 +33,11 @@ class Kost extends Model
         return $this->hasMany(RoomType::class);
     }
 
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     public function images()
     {
         return $this->hasMany(KostImage::class);

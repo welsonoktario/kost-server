@@ -67,8 +67,8 @@ class TenantController extends Controller
 
             // bikin invoice tagihan
             $invoice = $tenant->invoices()->create([
+                'kost_id' => $room_updated->roomType->kost_id,
                 'total' => $room_updated->roomType->cost,
-                'type' => 'Pemasukan'
             ]);
 
             $invoice->invoiceDetails()->create([

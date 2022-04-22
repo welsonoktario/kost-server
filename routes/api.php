@@ -9,6 +9,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\TenantServiceController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PembukuanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'complains' => ComplainController::class,
         'kosts' => KostController::class,
         'notifications' => NotificationController::class,
+        'pembukuans' => PembukuanController::class,
         'rooms' => RoomController::class,
         'services' => ServiceController::class,
         'tenants' => TenantController::class,

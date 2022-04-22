@@ -184,6 +184,7 @@ class TenantController extends Controller
             }
 
             $invoice = $tenant->invoices()->create([
+                'kost_id' => $tenant->room->kost->id,
                 'total' => $request->total,
                 'description' => "Tagihan tenant untuk bulan " . Carbon::now()->format('m-Y')
             ]);
@@ -240,6 +241,7 @@ class TenantController extends Controller
 
             return $this->success('Konfirmasi pembayaran sukses');
         } catch (Throwable $e) {
+            Log::error($e->getMessage());
             return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
         }
     }

@@ -17,4 +17,9 @@ class Service extends Model
     {
         return $this->hasMany(TenantService::class)->with('tenant');
     }
+
+    public function services()
+    {
+        return $this->hasMany(TenantService::class);
+    }
 }

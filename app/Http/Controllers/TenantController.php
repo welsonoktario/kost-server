@@ -186,7 +186,12 @@ class TenantController extends Controller
             $invoice = $tenant->invoices()->create([
                 'kost_id' => $tenant->room->kost->id,
                 'total' => $request->total,
-                'description' => "Tagihan tenant untuk bulan " . Carbon::now()->format('m-Y')
+                'date' => $request->date,
+                'description' => "Tagihan tenant untuk bulan " . Carbon::parse($tenant->due_date)->format('m-Y')
+            ]);
+
+            $tenant->update([
+                'due_date' => Carbon::parse($tenant->due_date)->addMonths(1)->format('Y-m-d')
             ]);
 
             $tagihan = [
@@ -205,6 +210,8 @@ class TenantController extends Controller
             });
 
             $additionals = $tenant->additionals->map(function ($additional, $key) {
+                $additional->update(['status' => 'dibayar']);
+
                 return [
                     'description' => $additional->description,
                     'cost' => $additional->cost
@@ -229,10 +236,6 @@ class TenantController extends Controller
                     ...$services,
                     ...$additionals
                 ]);
-            }
-
-            foreach ($tenant->additionals as $additional) {
-                $additional->update(['status' => 'dibayar']);
             }
 
             foreach ($tenant->dendas as $denda) {

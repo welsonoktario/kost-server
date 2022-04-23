@@ -24,6 +24,8 @@ class CreateInvoicesTable extends Migration
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
             $table->integer('total');
+            $table->date('date')->useCurrent();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

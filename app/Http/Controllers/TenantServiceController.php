@@ -18,8 +18,11 @@ class TenantServiceController extends Controller
      */
     public function index($id)
     {
-        $tenantServices = TenantService::with(['service', 'tenant.user'])
-            ->whereHas('service', fn ($q) => $q->where('kost_id', $id))->get();
+        $tenantServices = TenantService::query()
+            ->with(['service', 'tenant.user'])
+            ->whereHas('service', fn ($q) => $q->where('kost_id', $id))
+            ->orderBy('created_at', 'DESC')
+            ->get();
 
         return $this->success(null, $tenantServices);
     }
@@ -86,7 +89,7 @@ class TenantServiceController extends Controller
             ]);
 
             $tenantService->tenant->notifications()->create([
-                'message' => "Pengajuan service {$tenantService->service->nama} anda telah disetujui"
+                'message' => "Pengajuan service {$tenantService->service->name} anda untuk tanggal {$tenantService->tanggal} $aksi"
             ]);
             return $this->success('Pengajuan service diterima');
         } catch (Throwable $e) {

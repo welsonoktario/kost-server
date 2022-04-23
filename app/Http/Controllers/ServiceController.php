@@ -14,7 +14,9 @@ class ServiceController extends Controller
      */
     public function index(Request $request)
     {
-        $services = Service::where('kost_id', $request->kost)->get();
+        $services = Service::query()
+            ->where('kost_id', $request->kost)
+            ->get();
 
         return $this->success(null, $services);
     }

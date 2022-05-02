@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Pengeluaran extends Model
 {
-    use HasFactory;
+    protected $guarded = ['id', 'kost_id'];
+
+    public function kost()
+    {
+        return $this->belongsTo(Kost::class);
+    }
 }

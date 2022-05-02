@@ -19,7 +19,7 @@ class CreatePengeluaransTable extends Migration
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-            $table->date('date')->useCurrent();
+            $table->date('date');
             $table->integer('nominal');
             $table->text('description')->nullable();
             $table->timestamps();

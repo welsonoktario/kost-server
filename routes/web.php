@@ -12,6 +12,7 @@
 */
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DendaController;
 use App\Http\Controllers\PembukuanController;
 
 Route::get('/test', [PembukuanController::class, 'index']);

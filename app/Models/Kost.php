@@ -47,4 +47,9 @@ class Kost extends Model
     {
         return $this->morphMany(Notification::class, 'notificationable');
     }
+
+    public function pengeluarans()
+    {
+        return $this->hasMany(Pengeluaran::class);
+    }
 }

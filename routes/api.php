@@ -10,6 +10,8 @@ use App\Http\Controllers\TenantController;
 use App\Http\Controllers\TenantServiceController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PembukuanController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\DendaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,8 +43,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{id}', [TenantServiceController::class, 'index'])->name('tenant-service.index');
     });
 
+    Route::get('invoices/{kost}/history', [InvoiceController::class, 'historyTransaksi'])->name('invoices.history');
+
     Route::resources([
         'complains' => ComplainController::class,
+        'dendas' => DendaController::class,
         'kosts' => KostController::class,
         'notifications' => NotificationController::class,
         'pembukuans' => PembukuanController::class,

@@ -27,7 +27,7 @@ class InvoiceController extends Controller
      */
     public function store(Request $request)
     {
-
+        //
     }
 
     /**
@@ -68,5 +68,17 @@ class InvoiceController extends Controller
     public function destroy($id)
     {
     //
+    }
+
+    public function historyTransaksi($kost)
+    {
+        $invoices = Invoice::query()
+            ->with(['tenant.room', 'tenant.user', 'invoiceDetails'])
+            ->where('kost_id', $kost)
+            ->orderBy('date', 'DESC')
+            ->limit(10)
+            ->get();
+
+        return $this->success(null, $invoices);
     }
 }

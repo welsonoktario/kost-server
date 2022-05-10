@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ChatRoom extends Model
 {
-    protected $guarded = ['id', 'kost_id'];
+    protected $guarded = ['id'];
 
     public function messages()
     {
@@ -16,5 +16,10 @@ class ChatRoom extends Model
     public function kost()
     {
         return $this->belongsTo(Kost::class);
+    }
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
     }
 }

@@ -52,4 +52,14 @@ class Kost extends Model
     {
         return $this->hasMany(Pengeluaran::class);
     }
+
+    public function catatans()
+    {
+        return $this->hasMany(Catatan::class);
+    }
+
+    public function chatRooms()
+    {
+        return $this->hasMany(ChatRoom::class);
+    }
 }

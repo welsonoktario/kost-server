@@ -6,15 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
-    protected $guarded = ['id', 'chat_room_id', 'tenant_id'];
+    protected $guarded = ['id', 'chat_room_id'];
 
-    public function chat_room()
+    public function chatRoom()
     {
         return $this->belongsTo(ChatRoom::class);
-    }
-
-    public function tenant()
-    {
-        return $this->belongsTo(Tenant::class);
     }
 }

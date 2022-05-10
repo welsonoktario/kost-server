@@ -57,9 +57,9 @@ class Tenant extends Model
         return $this->morphMany(Notification::class, 'notificationable');
     }
 
-    public function messages()
+    public function chatRoom()
     {
-        return $this->hasMany(Message::class);
+        return $this->hasOne(ChatRoom::class);
     }
 
     public function dendas()

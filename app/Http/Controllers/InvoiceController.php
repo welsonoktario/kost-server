@@ -14,7 +14,9 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $invoices = Invoice::where('tenant_id', $request->tenant);
+        $invoices = Invoice::query()
+            ->with('tenant.room')
+            ->where('tenant_id', $request->tenant);
 
         return $this->success(null, $invoices);
     }

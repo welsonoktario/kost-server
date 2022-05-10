@@ -18,7 +18,7 @@ class DendaController extends Controller
     public function index(Request $request)
     {
         $tenants = Tenant::query()
-            ->with(['user'])
+            ->with(['user', 'room'])
             ->whereHas('room.roomType', function ($q) use ($request) {
                 return $q->where('kost_id', $request->kost);
             })

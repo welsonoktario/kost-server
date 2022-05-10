@@ -16,7 +16,7 @@ class ComplainController extends Controller
     public function index(Request $request)
     {
         $complains = Complain::query()
-            ->with('tenant.user')
+            ->with(['tenant.user', 'tenant.room'])
             ->when(
                 $request->kost,
                 function ($q) use ($request) {
@@ -48,7 +48,7 @@ class ComplainController extends Controller
         ]);
         $complain = $complain->load('tenant.user');
         $kost = $tenant->room->kost->notifications()->create([
-            'message' => "Tenant {$tenant->id} mengajukan komplain baru"
+            'message' => "Ruangan {$tenant->room->no_kamar} mengajukan komplain baru"
         ]);
 
         return $this->success('Komplain berhasil diajukan', $complain);

@@ -36,7 +36,6 @@ class TenantController extends Controller
     {
         $room_req = $request->room;
         $user_req = $request->user;
-        $services_req = collect($request->services)->map(fn ($s) => ['service_id', $s]);
         $user_req['password'] = Hash::make($user_req['username'] . substr($user_req['phone'], -4));
         $entry_date = Carbon::parse($request->entry_date, 'Asia/Jakarta');
         $due_date = Carbon::parse($request->entry_date, 'Asia/Jakarta')->addMonth();
@@ -57,9 +56,6 @@ class TenantController extends Controller
             $filename = "tenant_{$tenant->id}.jpeg";
             Storage::disk('public')->put($filename, $ktp);
             Tenant::find($tenant->id)->update(['ktp' => $filename]);
-
-            // tambah services user
-            $tenant->services()->createMany($services_req);
 
             // room diisi tenant
             Room::find($room_req)->update(['tenant_id' => $tenant->id]);

@@ -21,7 +21,7 @@ class PembukuanController extends Controller
         $startDate = $request->start ?: null;
         $endDate = $request->end ?: null;
         $invoices = Invoice::query()
-            ->with(['tenant.user', 'invoiceDetails'])
+            ->with(['tenant.user', 'tenant.room', 'invoiceDetails'])
             ->where('kost_id', $request->kost)
             ->when(
                 $startDate && $endDate,

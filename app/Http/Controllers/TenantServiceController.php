@@ -19,7 +19,7 @@ class TenantServiceController extends Controller
     public function index($id)
     {
         $tenantServices = TenantService::query()
-            ->with(['service', 'tenant.user'])
+            ->with(['service', 'tenant.user', 'tenant.room'])
             ->whereHas('service', fn ($q) => $q->where('kost_id', $id))
             ->orderBy('created_at', 'DESC')
             ->get();
@@ -60,7 +60,7 @@ class TenantServiceController extends Controller
             $serviceTenants = $tenant->services()->createMany($services);
             $notifications = collect($serviceTenants)->map(function ($st, $i) use ($tenant) {
                 return [
-                    'message' => "Tenant {$tenant->user->name} mengajukan service {$st->service->name} untuk tanggal {$st->tanggal}"
+                    'message' => "Ruangan {$tenant->room->no_kamar} mengajukan service {$st->service->name} untuk tanggal {$st->tanggal}"
                 ];
             });
             $tenant->room->kost->notifications()->createMany($notifications);

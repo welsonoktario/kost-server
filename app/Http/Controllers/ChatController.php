@@ -10,7 +10,7 @@ use App\Models\Kost;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Tenant;
 
-class MessageController extends Controller
+class ChatController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -20,7 +20,7 @@ class MessageController extends Controller
     public function index(Request $request)
     {
         $chatRoom = ChatRoom::query()
-            ->with('messages')
+            ->with('messages.tenant.user')
             ->firstOrCreate([
                 'kost_id' => $request->kost,
                 'tenant_id' => $request->tenant
@@ -35,11 +35,11 @@ class MessageController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request, $id)
     {
         try {
             $user = Auth::user();
-            $chatRoom = ChatRoom::query()->find($request->chatRoom);
+            $chatRoom = ChatRoom::query()->find($id);
 
             if ($user->type == 'Owner') {
                 $message = $chatRoom->messages()
@@ -67,5 +67,15 @@ class MessageController extends Controller
         } catch (Throwable $e) {
             return $this->fail("Pesan gagal terkirim: {$e->getMessage()}");
         }
+    }
+
+    public function chatRooms($kost)
+    {
+        $chatRooms = ChatRoom::query()
+            ->with(['tenant.user', 'tenant.room', 'messages'])
+            ->where('kost_id', $kost)
+            ->get();
+
+        return $this->success(null, $chatRooms);
     }
 }

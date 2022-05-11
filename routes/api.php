@@ -13,8 +13,7 @@ use App\Http\Controllers\PembukuanController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\DendaController;
 use App\Http\Controllers\CatatanController;
-use App\Models\ChatRoom;
-use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ChatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,13 +47,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('invoices/{kost}/history', [InvoiceController::class, 'historyTransaksi'])->name('invoices.history');
 
+    Route::prefix('chats')->group(function() {
+        Route::get('/', [ChatController::class, 'index'])->name('chats.index');
+        Route::get('{kost}', [ChatController::class, 'chatRooms'])->name('chats.rooms');
+        Route::post('{id}', [ChatController::class, 'store'])->name('chats.store');
+    });
+
     Route::resources([
         'catatans' => CatatanController::class,
-        'chat-rooms' => ChatRoom::class,
         'complains' => ComplainController::class,
         'dendas' => DendaController::class,
         'kosts' => KostController::class,
-        'messages' => MessageController::class,
         'notifications' => NotificationController::class,
         'pembukuans' => PembukuanController::class,
         'rooms' => RoomController::class,

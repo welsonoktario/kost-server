@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $types = $kost->roomTypes()->createMany(
+        $kost->roomTypes()->createMany(
             [
                 [
                     'name' => 'AC',
@@ -51,7 +51,10 @@ class DatabaseSeeder extends Seeder
         $rooms = [];
 
         for ($i = 1; $i <= 8; $i++) {
-            $rooms[$i - 0] = ['tenant_id' => null];
+            $rooms[$i - 0] = [
+                'tenant_id' => null,
+                'no_kamar' => $i
+            ];
         }
 
         RoomType::find(1)->rooms()->createMany($rooms);

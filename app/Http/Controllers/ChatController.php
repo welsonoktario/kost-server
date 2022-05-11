@@ -20,11 +20,11 @@ class ChatController extends Controller
     public function index(Request $request)
     {
         $chatRoom = ChatRoom::query()
-            ->with('messages.tenant.user')
             ->firstOrCreate([
                 'kost_id' => $request->kost,
                 'tenant_id' => $request->tenant
             ]);
+        $chatRoom->load(['tenant.user', 'tenant.room', 'messages.tenant.user']);
 
         return $this->success(null, $chatRoom);
     }
@@ -43,10 +43,10 @@ class ChatController extends Controller
 
             if ($user->type == 'Owner') {
                 $message = $chatRoom->messages()
-                    ->create([
-                        'is_owner' => true,
-                        'message' => $request->message
-                    ]);
+                ->create([
+                    'is_owner' => true,
+                    'message' => $request->message
+                ]);
 
                 Tenant::query()
                     ->find($chatRoom->tenant_id)
@@ -55,11 +55,17 @@ class ChatController extends Controller
                         'message' => 'Anda mendapatkan pesan baru'
                     ]);
             } elseif ($user->type == 'Tenant') {
+                $message = $chatRoom->messages()
+                    ->create([
+                        'is_owner' => false,
+                        'message' => $request->message
+                    ]);
+
                 Kost::query()
                     ->find($chatRoom->kost_id)
                     ->notifications()
                     ->create([
-                        'message' => 'Anda mendapatkan pesan baru dari ' . $user->tenant->room->no_kamar
+                        'message' => 'Anda mendapatkan pesan baru dari room' . $user->tenant->room->no_kamar
                     ]);
             }
 
@@ -74,6 +80,7 @@ class ChatController extends Controller
         $chatRooms = ChatRoom::query()
             ->with(['tenant.user', 'tenant.room', 'messages'])
             ->where('kost_id', $kost)
+            ->has('messages')
             ->get();
 
         return $this->success(null, $chatRooms);

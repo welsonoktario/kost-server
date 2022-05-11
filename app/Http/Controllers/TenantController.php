@@ -11,13 +11,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
+use Illuminate\Support\Facades\DB;
 
 class TenantController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index()
     {
@@ -30,7 +31,7 @@ class TenantController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -40,6 +41,8 @@ class TenantController extends Controller
         $entry_date = Carbon::parse($request->entry_date, 'Asia/Jakarta');
         $due_date = Carbon::parse($request->entry_date, 'Asia/Jakarta')->addMonth();
         $leave_date = Carbon::parse($request->entry_date, 'Asia/Jakarta')->addMonths($request->durasi);
+
+        DB::beginTransaction();
 
         try {
             // bikin user dan tenant
@@ -63,6 +66,7 @@ class TenantController extends Controller
 
             // bikin invoice tagihan
             $invoice = $tenant->invoices()->create([
+                'date' => Carbon::now()->format('Y-m-d'),
                 'kost_id' => $room_updated->roomType->kost_id,
                 'total' => $room_updated->roomType->cost,
             ]);
@@ -72,8 +76,11 @@ class TenantController extends Controller
                 'cost' => $room_updated->roomType->cost
             ]);
 
+            DB::commit();
+
             return $this->success('Data tenant berhasil ditambahkan', $room_updated);
         } catch (Throwable $err) {
+            DB::rollBack();
             return $this->fail($err->getMessage());
         }
     }
@@ -82,7 +89,7 @@ class TenantController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show($id)
     {
@@ -113,7 +120,7 @@ class TenantController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id)
     {
@@ -134,7 +141,7 @@ class TenantController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id)
     {
@@ -167,6 +174,8 @@ class TenantController extends Controller
 
     public function konfirmasiPembayaran(Request $request, $id)
     {
+        DB::beginTransaction();
+
         try {
             $tenant = Tenant::with([
                 'room.roomType',
@@ -238,9 +247,12 @@ class TenantController extends Controller
                 $denda->update(['status' => 'dibayar']);
             }
 
+            DB::commit();
+
             return $this->success('Konfirmasi pembayaran sukses');
         } catch (Throwable $e) {
             Log::error($e->getMessage());
+            DB::rollback();
             return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
         }
     }

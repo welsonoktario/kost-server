@@ -18,6 +18,7 @@ class CatatanController extends Controller
     {
         $catatans = Catatan::query()
             ->where('kost_id', $request->kost)
+            ->orderBy('created_at', 'DESC')
             ->get();
 
         return $this->success(null, $catatans);

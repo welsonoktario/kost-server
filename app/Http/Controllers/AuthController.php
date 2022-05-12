@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -30,13 +31,13 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        Log::debug(json_encode($request->all()));
-
         $kost_req = $request->kost;
         $types_req = array_reverse($request->types);
         $services_req = array_reverse($request->services);
         $user_req = $kost_req['user'];
         $user_req['password'] = Hash::make($request->password);
+
+        DB::beginTransaction();
 
         try {
             $user = User::create($user_req);
@@ -44,9 +45,14 @@ class AuthController extends Controller
 
             foreach ($types_req as $type_req) {
                 $type = $kost->roomTypes()->create($type_req);
+                $no_kamar = collect(range(1, $type->room_count));
 
-                $rooms = array_fill(0, $type->room_count, ['room_type_id' => $type->id]);
-                Log::debug(json_encode($rooms));
+                $rooms = $no_kamar->map(function ($no) use ($type) {
+                    return [
+                        'room_type_id' => $type->id,
+                        'no_kamar' => $no
+                    ];
+                });
                 $type->rooms()->createMany($rooms);
             }
 
@@ -55,14 +61,16 @@ class AuthController extends Controller
             }
             $token = $user->createToken($user->username);
 
+            DB::commit();
+
             return $this->success('Kost berhasil dibuat', [
                 'user' => $user,
                 'kost' => $kost,
                 'token' => $token->plainTextToken
             ]);
-        }
-        catch (Throwable $e) {
-            report($e);
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error($e->getTraceAsString());
             return $this->fail($e->getMessage());
         }
     }

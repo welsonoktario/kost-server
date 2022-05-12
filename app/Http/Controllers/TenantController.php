@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 
 class TenantController extends Controller
 {
@@ -130,11 +131,26 @@ class TenantController extends Controller
             return $this->fail('Data tenant tidak ditemukan');
         }
 
-        if (!$tenant->update($request->all())) {
-            return $this->fail('Terjadi kesalahan mengubah data tenant');
-        }
+        DB::beginTransaction();
 
-        return $this->success('Data tenant berhasil diubah');
+        try {
+            $data = $request->all();
+            $data['password'] = Hash::make($data['username'] . substr($data['phone'], -4));
+            $tenant->user()->update($data);
+
+            DB::commit();
+
+            return $this->success('Data tenant berhasil diubah');
+        } catch (QueryException $e) {
+            DB::rollBack();
+
+            switch ($e->getCode()) {
+                case 23000:
+                    return $this->fail("Username atau nomor HP telah digunakan");
+                default:
+                    return $this->fail("Terjadi kesalahan mengubah biodata tenant: {$e->getMessage()}");
+            }
+        }
     }
 
     /**

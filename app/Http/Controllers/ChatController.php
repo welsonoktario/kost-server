@@ -52,7 +52,7 @@ class ChatController extends Controller
                     ->find($chatRoom->tenant_id)
                     ->notifications()
                     ->create([
-                        'message' => 'Anda mendapatkan pesan baru'
+                        'message' => 'Anda mendapatkan pesan baru dari pemilik kost'
                     ]);
             } elseif ($user->type == 'Tenant') {
                 $message = $chatRoom->messages()
@@ -65,7 +65,7 @@ class ChatController extends Controller
                     ->find($chatRoom->kost_id)
                     ->notifications()
                     ->create([
-                        'message' => 'Anda mendapatkan pesan baru dari room' . $user->tenant->room->no_kamar
+                        'message' => "Anda mendapatkan pesan baru dari penyewa kamar no {$user->tenant->room->no_kamar}"
                     ]);
             }
 

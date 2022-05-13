@@ -204,6 +204,11 @@ class TenantController extends Controller
                 return $this->fail('Data tenant tidak ditemukan');
             }
 
+            $kost = $tenant->room->roomType->kost;
+            $entry_date = Carbon::parse($tenant->entry_date);
+            $due_date = Carbon::parse($tenant->due_date);
+            $now = Carbon::now();
+
             $invoice = $tenant->invoices()->create([
                 'kost_id' => $tenant->room->kost->id,
                 'total' => $request->total,
@@ -239,10 +244,22 @@ class TenantController extends Controller
                 ];
             });
 
-            if ($tenant->dendas->count()) {
+            // TODO Kurang denda berlaku setelah berapa lama
+            $dendaHari = $now->diffInDays($due_date, false);
+
+            $denda = $tenant->dendas()->create([
+                'title' => 'Denda',
+                'description' => "Denda keterlambatan selama {$denda} hari",
+                'cost' => $tenant->dendas->sum('cost'),
+                'status' => 'dibayar'
+            ]);
+
+            // TODO Kurang denda berlaku setelah berapa lama
+            if ($dendaHari > 0 && $now >= $due_date) {
+                $dendaHari = abs($dendaHari);
                 $dendas = [
-                    'description' => "Denda keterlambatan selama {$tenant->dendas->count()} hari",
-                    'cost' => $tenant->dendas->sum('cost')
+                    'description' => "Denda keterlambatan selama {$dendaHari} hari",
+                    'cost' => $denda->cost
                 ];
 
                 $invoice->invoiceDetails()->createMany([

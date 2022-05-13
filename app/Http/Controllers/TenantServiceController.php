@@ -60,7 +60,7 @@ class TenantServiceController extends Controller
             $serviceTenants = $tenant->services()->createMany($services);
             $notifications = collect($serviceTenants)->map(function ($st, $i) use ($tenant) {
                 return [
-                    'message' => "Ruangan {$tenant->room->no_kamar} mengajukan service {$st->service->name} untuk tanggal {$st->tanggal}"
+                    'message' => "Penyewa kamar no {$tenant->room->no_kamar} mengajukan service {$st->service->name} untuk tanggal {$st->tanggal}"
                 ];
             });
             $tenant->room->kost->notifications()->createMany($notifications);

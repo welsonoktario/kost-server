@@ -59,13 +59,13 @@ class AuthController extends Controller
             foreach ($services_req as $service_req) {
                 $kost->services()->create($service_req);
             }
+            $user = $user->load(['tenant', 'kost']);
             $token = $user->createToken($user->username);
 
             DB::commit();
 
             return $this->success('Kost berhasil dibuat', [
                 'user' => $user,
-                'kost' => $kost,
                 'token' => $token->plainTextToken
             ]);
         } catch (Throwable $e) {

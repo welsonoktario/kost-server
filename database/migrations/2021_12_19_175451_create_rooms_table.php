@@ -24,7 +24,7 @@ class CreateRoomsTable extends Migration
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->onDelete('SET NULL');
-            $table->integer('no_kamar');
+            $table->string('no_kamar');
             $table->timestamps();
         });
     }

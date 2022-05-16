@@ -26,6 +26,7 @@ class CreateKostsTable extends Migration
             $table->string('address', 100);
             $table->integer('nominal_denda')->default(0);
             $table->integer('interval_denda')->default(1);
+            $table->integer('denda_berlaku')->default(0);
             $table->timestamps();
         });
     }

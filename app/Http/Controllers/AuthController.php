@@ -50,7 +50,7 @@ class AuthController extends Controller
                 $rooms = $no_kamar->map(function ($no) use ($type) {
                     return [
                         'room_type_id' => $type->id,
-                        'no_kamar' => $no
+                        'no_kamar' => "{$type->nama} $no"
                     ];
                 });
                 $type->rooms()->createMany($rooms);
@@ -70,7 +70,6 @@ class AuthController extends Controller
             ]);
         } catch (Throwable $e) {
             DB::rollBack();
-            Log::error($e->getTraceAsString());
             return $this->fail($e->getMessage());
         }
     }

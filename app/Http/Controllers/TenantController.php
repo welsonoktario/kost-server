@@ -205,9 +205,6 @@ class TenantController extends Controller
             }
 
             $kost = $tenant->room->roomType->kost;
-            $entry_date = Carbon::parse($tenant->entry_date);
-            $due_date = Carbon::parse($tenant->due_date);
-            $now = Carbon::now();
 
             $invoice = $tenant->invoices()->create([
                 'kost_id' => $tenant->room->kost->id,
@@ -244,19 +241,19 @@ class TenantController extends Controller
                 ];
             });
 
-            // TODO Kurang denda berlaku setelah berapa lama
-            $dendaHari = $now->diffInDays($due_date, false);
+            $now = Carbon::now();
+            $mulaiDenda = Carbon::parse($tenant->due_date);
+            $mulaiDenda->addDays($kost->denda_berlaku);
+            $dendaHari = $mulaiDenda->diffInDays($now, false);
 
-            $denda = $tenant->dendas()->create([
-                'title' => 'Denda',
-                'description' => "Denda keterlambatan selama {$denda} hari",
-                'cost' => $tenant->dendas->sum('cost'),
-                'status' => 'dibayar'
-            ]);
+            if ($dendaHari > 0 && $now >= $mulaiDenda) {
+                $denda = $tenant->dendas()->create([
+                    'title' => 'Denda',
+                    'description' => "Denda keterlambatan selama {$dendaHari} hari",
+                    'cost' => ceil($dendaHari / $kost->interval_denda) * $kost->nominal_denda,
+                    'status' => 'dibayar'
+                ]);
 
-            // TODO Kurang denda berlaku setelah berapa lama
-            if ($dendaHari > 0 && $now >= $due_date) {
-                $dendaHari = abs($dendaHari);
                 $dendas = [
                     'description' => "Denda keterlambatan selama {$dendaHari} hari",
                     'cost' => $denda->cost
@@ -298,7 +295,7 @@ class TenantController extends Controller
                 'leave_date' => Carbon::parse($tenant->leave_date)->addMonths($request->durasi)->format('Y-m-d')
             ]);
 
-            return $this->success('Perpanjangan berhasil');
+            return $this->success('Perpanjangan lama menyewa berhasil');
         } catch (Throwable $e) {
             return $this->fail('Terjadi kesalahan perpanjangan');
         }

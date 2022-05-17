@@ -18,6 +18,7 @@ class ServiceController extends Controller
     {
         $services = Service::query()
             ->where('kost_id', $request->kost)
+            ->orderBy('created_at', 'DESC')
             ->get();
 
         return $this->success(null, $services);

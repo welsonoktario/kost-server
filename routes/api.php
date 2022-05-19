@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{tenant}/konfirmasi', [TenantController::class, 'konfirmasiPembayaran'])->name('tenants.konfirmasiPembayaran');
         Route::get('{tenant}/perpanjang', [TenantController::class, 'perpanjang'])->name('tenants.perpanjang');
         Route::post('{tenant}/tagihan', [TenantController::class, 'addTagihan'])->name('tenants.addTagihan');
+        Route::put('{tenant}/password', [TenantController::class, 'gantiPassword'])->name('tenants.gantiPassword');
     });
 
     Route::prefix('tenant-service')->group(function () {
@@ -47,7 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('invoices/{kost}/history', [InvoiceController::class, 'historyTransaksi'])->name('invoices.history');
 
-    Route::prefix('chats')->group(function() {
+    Route::prefix('chats')->group(function () {
         Route::get('/', [ChatController::class, 'index'])->name('chats.index');
         Route::get('{kost}', [ChatController::class, 'chatRooms'])->name('chats.rooms');
         Route::post('{id}', [ChatController::class, 'store'])->name('chats.store');

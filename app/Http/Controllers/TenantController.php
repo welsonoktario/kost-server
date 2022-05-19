@@ -67,13 +67,14 @@ class TenantController extends Controller
 
             // bikin invoice tagihan
             $invoice = $tenant->invoices()->create([
-                'date' => Carbon::now()->format('Y-m-d'),
+                'date' => $entry_date,
                 'kost_id' => $room_updated->roomType->kost_id,
                 'total' => $room_updated->roomType->cost,
+                'description' => "Tagihan awal penyewa baru untuk bulan " . $entry_date->format('m-Y')
             ]);
 
             $invoice->invoiceDetails()->create([
-                'description' => "Tagihan tenant untuk bulan " . Carbon::now()->format('m-Y'),
+                'description' => "Tagihan awal penyewa baru untuk bulan " . $entry_date->format('m-Y'),
                 'cost' => $room_updated->roomType->cost
             ]);
 
@@ -97,7 +98,6 @@ class TenantController extends Controller
         $tenant = Tenant::with([
             'services' => fn ($q) => $q->where('status', 'diterima'),
             'additionals' => fn ($q) => $q->where('status', 'pending'),
-            'dendas' => fn ($q) => $q->where('status', 'pending'),
             'room.roomType',
             'room.kost'
         ])->find($id);
@@ -205,6 +205,10 @@ class TenantController extends Controller
             }
 
             $kost = $tenant->room->roomType->kost;
+            $dueDate = clone $tenant;
+            $dueDate = Carbon::parse($dueDate->due_date);
+            $dueDateBaru = clone $tenant;
+            $dueDateBaru = Carbon::parse($dueDateBaru->due_date)->addMonths(1)->format('Y-m-d');
 
             $invoice = $tenant->invoices()->create([
                 'kost_id' => $tenant->room->kost->id,
@@ -214,7 +218,7 @@ class TenantController extends Controller
             ]);
 
             $tenant->update([
-                'due_date' => Carbon::parse($tenant->due_date)->addMonths(1)->format('Y-m-d')
+                'due_date' => $dueDateBaru
             ]);
 
             $tagihan = [
@@ -242,15 +246,14 @@ class TenantController extends Controller
             });
 
             $now = Carbon::now();
-            $mulaiDenda = Carbon::parse($tenant->due_date);
-            $mulaiDenda->addDays($kost->denda_berlaku);
+            $mulaiDenda = $dueDate->addDays($kost->denda_berlaku);
             $dendaHari = $mulaiDenda->diffInDays($now, false);
 
-            if ($dendaHari > 0 && $now >= $mulaiDenda) {
+            if ($dendaHari > 0) {
                 $denda = $tenant->dendas()->create([
                     'title' => 'Denda',
                     'description' => "Denda keterlambatan selama {$dendaHari} hari",
-                    'cost' => ceil($dendaHari / $kost->interval_denda) * $kost->nominal_denda,
+                    'cost' => (int) ceil($dendaHari / $kost->interval_denda) * $kost->nominal_denda,
                     'status' => 'dibayar'
                 ]);
 
@@ -298,6 +301,26 @@ class TenantController extends Controller
             return $this->success('Perpanjangan lama menyewa berhasil');
         } catch (Throwable $e) {
             return $this->fail('Terjadi kesalahan perpanjangan');
+        }
+    }
+
+    public function gantiPassword(Request $request, $id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $tenant = Tenant::find($id);
+            $tenant->user()->update([
+                'password' => Hash::make($request->pass)
+            ]);
+
+            DB::commit();
+            return $this->success('Password berhasil diubah');
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
+
+            return $this->fail('Terjadi kesalahan sistem');
         }
     }
 }

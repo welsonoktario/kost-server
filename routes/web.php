@@ -14,5 +14,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DendaController;
 use App\Http\Controllers\PembukuanController;
+use App\Http\Controllers\TenantController;
 
-Route::get('/test', [PembukuanController::class, 'index']);
+Route::get('/test/{tenant}', [TenantController::class, 'show']);

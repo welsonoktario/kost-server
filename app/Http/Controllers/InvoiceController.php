@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use Illuminate\Http\Request;
+use App\Models\Pengeluaran;
 
 class InvoiceController extends Controller
 {
@@ -58,7 +59,7 @@ class InvoiceController extends Controller
      */
     public function update(Request $request, $id)
     {
-    //
+        //
     }
 
     /**
@@ -69,7 +70,7 @@ class InvoiceController extends Controller
      */
     public function destroy($id)
     {
-    //
+        //
     }
 
     public function historyTransaksi($kost)
@@ -81,6 +82,22 @@ class InvoiceController extends Controller
             ->limit(10)
             ->get();
 
-        return $this->success(null, $invoices);
+        $pengeluarans = Pengeluaran::query()
+            ->where('kost_id', $kost)
+            ->orderBy('date', 'DESC')
+            ->limit(10)
+            ->get();
+
+        $invoices = $invoices->map(function ($invoice) {
+            return ['invoice' => $invoice];
+        });
+
+        $pengeluarans = $pengeluarans->map(function ($pengeluaran) {
+            return ['pengeluaran' => $pengeluaran];
+        });
+
+        $data = $invoices->merge($pengeluarans)->sortByDesc('date');
+
+        return $this->success(null, $data);
     }
 }

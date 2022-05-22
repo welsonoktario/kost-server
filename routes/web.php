@@ -12,8 +12,6 @@
 */
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DendaController;
-use App\Http\Controllers\PembukuanController;
-use App\Http\Controllers\TenantController;
+use App\Http\Controllers\InvoiceController;
 
-Route::get('/test/{tenant}', [TenantController::class, 'show']);
+Route::get('/test/{kost}', [InvoiceController::class, 'historyTransaksi']);

@@ -246,7 +246,7 @@ class TenantController extends Controller
             });
 
             $now = Carbon::now();
-            $mulaiDenda = $dueDate->copy()-> addDays($kost->denda_berlaku);
+            $mulaiDenda = $dueDate->copy()->addDays($kost->denda_berlaku);
             $dendaHari = $mulaiDenda->diffInDays($now, false);
 
             if ($dendaHari > 0) {
@@ -305,7 +305,7 @@ class TenantController extends Controller
             ]);
 
             $tenant->notifications()->create([
-                'message' => "Masa sewa anda telah diperpanjang {$request->durasi} bulan hingga {$leaveDate}"
+                'message' => "Masa sewa anda telah diperpanjang {$request->durasi} bulan hingga {$leaveDate->format('Y-m-d')}"
             ]);
 
             return $this->success('Perpanjangan lama menyewa berhasil');

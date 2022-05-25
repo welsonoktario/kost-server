@@ -46,7 +46,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{id}', [TenantServiceController::class, 'index'])->name('tenant-service.index');
     });
 
-    Route::get('invoices/{kost}/history', [InvoiceController::class, 'historyTransaksi'])->name('invoices.history');
+    Route::prefix('invoices')->group(function () {
+        Route::get('{tenant}/nota', [InvoiceController::class, 'nota'])->name('invoices.nota');
+        Route::get('{kost}/history', [InvoiceController::class, 'historyTransaksi'])->name('invoices.history');
+    });
 
     Route::prefix('chats')->group(function () {
         Route::get('/', [ChatController::class, 'index'])->name('chats.index');

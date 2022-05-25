@@ -246,7 +246,7 @@ class TenantController extends Controller
             });
 
             $now = Carbon::now();
-            $mulaiDenda = $dueDate->addDays($kost->denda_berlaku);
+            $mulaiDenda = $dueDate->copy()-> addDays($kost->denda_berlaku);
             $dendaHari = $mulaiDenda->diffInDays($now, false);
 
             if ($dendaHari > 0) {
@@ -280,12 +280,17 @@ class TenantController extends Controller
                 $denda->update(['status' => 'dibayar']);
             }
 
+            $tenant->notifications()->create([
+                'message' => "Konfirmasi pembayaran tagihan anda untuk tanggal {$dueDate->copy()->format('m-Y')} telah dikonfirmasi"
+            ]);
+
             DB::commit();
 
             return $this->success('Konfirmasi pembayaran sukses');
         } catch (Throwable $e) {
             Log::error($e->getMessage());
             DB::rollback();
+
             return $this->fail('Terjadi kesalahan mengonfirmasi pembayaran');
         }
     }
@@ -294,8 +299,13 @@ class TenantController extends Controller
     {
         try {
             $tenant = Tenant::find($id);
+            $leaveDate = Carbon::parse($tenant->leave_date)->copy()->addMonths($request->durasi);
             $tenant->update([
-                'leave_date' => Carbon::parse($tenant->leave_date)->addMonths($request->durasi)->format('Y-m-d')
+                'leave_date' => $leaveDate->format('Y-m-d')
+            ]);
+
+            $tenant->notifications()->create([
+                'message' => "Masa sewa anda telah diperpanjang {$request->durasi} bulan hingga {$leaveDate}"
             ]);
 
             return $this->success('Perpanjangan lama menyewa berhasil');

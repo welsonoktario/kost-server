@@ -69,6 +69,7 @@ class AuthController extends Controller
                 'token' => $token->plainTextToken
             ]);
         } catch (Throwable $e) {
+            Log::error($e->getMessage());
             DB::rollBack();
             return $this->fail($e->getMessage());
         }

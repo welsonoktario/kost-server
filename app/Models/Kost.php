@@ -38,11 +38,6 @@ class Kost extends Model
         return $this->hasMany(Invoice::class);
     }
 
-    public function images()
-    {
-        return $this->hasMany(KostImage::class);
-    }
-
     public function notifications()
     {
         return $this->morphMany(Notification::class, 'notificationable');

@@ -47,13 +47,20 @@ class TenantController extends Controller
 
         try {
             // bikin user dan tenant
-            $user = User::create($user_req);
-            $tenant = $user->tenant()->create([
-                'entry_date' => $entry_date,
-                'due_date' => $due_date,
-                'leave_date' => $leave_date,
-                'status' => true
-            ]);
+            $user = User::query()->updateOrCreate(
+                ['username' => $user_req['username']],
+                [...$user_req,'deleted_at' => null]
+            );
+            $tenant = $user->tenant()->updateOrCreate(
+                ['user_username' => $user->username],
+                [
+                    'entry_date' => $entry_date,
+                    'due_date' => $due_date,
+                    'leave_date' => $leave_date,
+                    'status' => true,
+                    'deleted_at' => null
+                ]
+            );
 
             // upload ktp tenant
             $ktp = base64_decode($request->ktp);
@@ -70,7 +77,10 @@ class TenantController extends Controller
                 'date' => $entry_date,
                 'kost_id' => $room_updated->roomType->kost_id,
                 'total' => $room_updated->roomType->cost,
-                'description' => "Tagihan awal penyewa baru untuk bulan " . $entry_date->format('m-Y')
+                'nama' => $tenant->user->name,
+                'no_kamar' => $room_updated->no_kamar,
+                'tanggal_tagihan' => $entry_date->copy()->format('m-Y'),
+                'description' => "Tagihan awal penyewa baru untuk bulan " . $entry_date->copy()->format('m-Y')
             ]);
 
             $invoice->invoiceDetails()->create([
@@ -161,9 +171,12 @@ class TenantController extends Controller
      */
     public function destroy($id)
     {
-        $tenant = Tenant::find($id)->user()->delete();
+        $tenant = Tenant::find($id);
+        $tenant->room()->update([
+            'tenant_id' => null
+        ]);
 
-        if (!$tenant) {
+        if (!$tenant->delete()) {
             return $this->fail('Terjadi kesalahan menghapus data tenant');
         }
 
@@ -214,7 +227,10 @@ class TenantController extends Controller
                 'kost_id' => $tenant->room->kost->id,
                 'total' => $request->total,
                 'date' => $request->date,
-                'description' => "Tagihan tenant untuk bulan " . Carbon::parse($tenant->due_date)->format('m-Y')
+                'nama' => $tenant->user->name,
+                'no_kamar' => $tenant->room->no_kamar,
+                'tanggal_tagihan' => Carbon::parse($tenant->due_date)->copy()->format('m-Y'),
+                'description' => "Tagihan tenant untuk bulan " . Carbon::parse($tenant->due_date)->copy()->format('m-Y')
             ]);
 
             $tenant->update([

@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Znck\Eloquent\Traits\BelongsToThrough;
 
 class Tenant extends Model
 {
-    use \Znck\Eloquent\Traits\BelongsToThrough;
+    use SoftDeletes, BelongsToThrough;
 
     protected $guarded = ['id', 'kost_id'];
 
@@ -15,7 +17,8 @@ class Tenant extends Model
         'leave_date',
         'due_date',
         'status',
-        'ktp'
+        'ktp',
+        'deleted_at'
     ];
 
     protected $casts = [

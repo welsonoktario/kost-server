@@ -57,7 +57,9 @@ class InvoiceController extends Controller
      */
     public function show($id)
     {
-        $invoice = Invoice::with(['details', 'services', 'dendas'])->find($id);
+        $invoice = Invoice::query()
+            ->with(['details', 'services', 'dendas'])
+            ->find($id);
 
         if (!$invoice) {
             return $this->fail('Data invoice tidak ditemukan');

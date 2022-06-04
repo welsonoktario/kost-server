@@ -66,13 +66,13 @@ class PembukuanController extends Controller
     {
         try {
             $pengeluaran = Kost::query()
-            ->find($request->kost)
-            ->pengeluarans()
-            ->create([
-                'nominal' => (int) $request->nominal,
-                'description' => $request->description,
-                'date' => $request->date
-            ]);
+                ->find($request->kost)
+                ->pengeluarans()
+                ->create([
+                    'nominal' => (int) $request->nominal,
+                    'description' => $request->description,
+                    'date' => $request->date
+                ]);
 
             return $this->success("Pengeluaran berhasil ditambahkan", $pengeluaran);
         } catch (Throwable $e) {

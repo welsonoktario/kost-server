@@ -23,6 +23,9 @@ class CreateInvoicesTable extends Migration
                 ->constrained()
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
+            $table->string('nama')->nullable();
+            $table->string('no_kamar')->nullable();
+            $table->string('tanggal_tagihan')->nullable();
             $table->integer('total');
             $table->date('date')->useCurrent();
             $table->text('description')->nullable();

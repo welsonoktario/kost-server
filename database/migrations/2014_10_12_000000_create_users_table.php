@@ -20,6 +20,7 @@ class CreateUsersTable extends Migration
             $table->string('phone', 15)->unique();
             $table->enum('type', ['Owner', 'Tenant'])->default('Tenant');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

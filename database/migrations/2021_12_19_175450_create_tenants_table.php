@@ -28,6 +28,7 @@ class CreateTenantsTable extends Migration
             $table->boolean('status');
             $table->string('ktp')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

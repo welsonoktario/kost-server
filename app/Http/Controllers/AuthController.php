@@ -21,6 +21,11 @@ class AuthController extends Controller
         }
 
         $user = User::with(['tenant', 'kost'])->find($request->username);
+
+        if ($user->tenant && $user->tenant->deleted_at) {
+            return $this->fail('Akun telah dihapus atau tidak terdaftar');
+        }
+
         $token = $user->createToken($request->username);
 
         return $this->success(null, [

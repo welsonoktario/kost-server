@@ -20,6 +20,7 @@ class DendaController extends Controller
         $kost = Kost::find($request->kost);
         $tenants = Tenant::query()
             ->with(['user', 'room'])
+            ->whereNull('deleted_at')
             ->whereHas('room.roomType', function ($q) use ($kost) {
                 return $q->where('kost_id', $kost->id);
             })

@@ -14,13 +14,14 @@ class TenantServiceController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index($id)
     {
         $tenantServices = TenantService::query()
             ->with(['service', 'tenant.user', 'tenant.room'])
             ->whereHas('service', fn ($q) => $q->where('kost_id', $id))
+            ->whereHas('tenant', fn ($q) => $q->whereNull('deleted_at'))
             ->orderBy('created_at', 'DESC')
             ->get();
 
@@ -30,7 +31,7 @@ class TenantServiceController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function indexById($id)
     {
@@ -43,7 +44,7 @@ class TenantServiceController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -77,7 +78,7 @@ class TenantServiceController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id)
     {

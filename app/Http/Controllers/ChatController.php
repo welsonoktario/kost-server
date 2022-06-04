@@ -80,6 +80,9 @@ class ChatController extends Controller
         $chatRooms = ChatRoom::query()
             ->with(['tenant.user', 'tenant.room', 'messages'])
             ->where('kost_id', $kost)
+            ->whereHas('tenant', function ($q) {
+                return $q->whereNull('deleted_at');
+            })
             ->has('messages')
             ->get();
 

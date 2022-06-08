@@ -46,6 +46,19 @@ class TenantController extends Controller
         DB::beginTransaction();
 
         try {
+            // cek udah terdaftar apa belum
+            $oldUser = User::query()
+                ->with('tenant')
+                ->where('username', $user_req['username'])
+                ->orWhere('phone', $user_req['phone'])
+                ->first();
+
+            if ($oldUser) {
+                if ($oldUser->tenant && !$oldUser->tenant->deleted_at) {
+                    return $this->fail('Username atau no hp telah digunakan');
+                }
+            }
+
             // bikin user dan tenant
             $user = User::query()->updateOrCreate(
                 ['username' => $user_req['username']],

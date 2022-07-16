@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{tenant}/perpanjang', [TenantController::class, 'perpanjang'])->name('tenants.perpanjang');
         Route::post('{tenant}/tagihan', [TenantController::class, 'addTagihan'])->name('tenants.addTagihan');
         Route::put('{tenant}/password', [TenantController::class, 'gantiPassword'])->name('tenants.gantiPassword');
+        Route::get('jatuh-tempo', [TenantController::class, 'jatuhTempo'])->name('tenants.jatuhTempo');
     });
 
     Route::prefix('tenant-service')->group(function () {

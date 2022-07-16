@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Kost;
 use App\Models\Room;
 use App\Models\Tenant;
 use App\Models\User;
@@ -361,5 +362,20 @@ class TenantController extends Controller
 
             return $this->fail('Terjadi kesalahan sistem');
         }
+    }
+
+    public function jatuhTempo(Request $request)
+    {
+        $kost = Kost::find($request->kost);
+        $tenants = Tenant::query()
+            ->with(['user', 'room'])
+            ->whereNull('deleted_at')
+            ->whereHas('room.roomType', function ($q) use ($kost) {
+                return $q->where('kost_id', $kost->id);
+            })
+            ->whereRaw('DATEDIFF(due_date, current_date) >= 0 AND DATEDIFF(due_date, current_date) <= 14')
+            ->get();
+
+        return $this->success(null, $tenants);
     }
 }

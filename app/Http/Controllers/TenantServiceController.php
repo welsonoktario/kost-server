@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TenantServiceController extends Controller
 {
@@ -82,18 +83,33 @@ class TenantServiceController extends Controller
      */
     public function update(Request $request, $id)
     {
+        DB::beginTransaction();
+
         try {
             $aksi = $request->aksi ?: 'diterima';
+            $alasan = $request->alasan ?: null;
             $tenantService = TenantService::with(['tenant', 'service'])->find($id);
             $tenantService->update([
-                'status' => $aksi
+                'status' => $aksi,
+                'alasan' => $alasan
             ]);
 
-            $tenantService->tenant->notifications()->create([
-                'message' => "Pengajuan service {$tenantService->service->name} anda untuk tanggal {$tenantService->tanggal} $aksi"
-            ]);
+            if ($aksi == 'ditolak') {
+                $tenantService->tenant->notifications()->create([
+                    'message' => "Pengajuan service {$tenantService->service->name} anda untuk tanggal {$tenantService->tanggal} $aksi. Alasan penolakan: {$alasan}"
+                ]);
+            } else {
+                $tenantService->tenant->notifications()->create([
+                    'message' => "Pengajuan service {$tenantService->service->name} anda untuk tanggal {$tenantService->tanggal} $aksi"
+                ]);
+            }
+
+            DB::commit();
+
             return $this->success('Pengajuan service diterima');
         } catch (Throwable $e) {
+            DB::rollBack();
+
             return $this->fail($e->getMessage());
         }
     }
